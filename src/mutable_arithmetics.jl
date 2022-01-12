@@ -1,5 +1,3 @@
-import MathOptInterface
-MOI = MathOptInterface
 
 import MutableArithmetics
 _MA = MutableArithmetics

@@ -1,8 +1,6 @@
 using UnitJuMP
 using Test
 
-using GLPK
-
 import MutableArithmetics
 const _MA = MutableArithmetics
 
@@ -81,9 +79,3 @@ end
 
 end
 
-@testset "Optimization" begin
-
-    m = Model()
-
-    
-end
