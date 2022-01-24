@@ -4,16 +4,19 @@ using Test
 import MutableArithmetics
 const _MA = MutableArithmetics
 
+@testset "Operators" begin
+    include("test_operators.jl")
+end
 
 @testset "Variables" begin
 
     m = Model()
     
     @variable(m, x ≥ 0, u"m/s")
-    @test UnitJuMP.unit(x) == u"m/s"
+    @test unit(x) == u"m/s"
 
     @variable(m, y[1:4], u"km/hr")
-    @test  UnitJuMP.unit(y[2]) == u"km/hr"
+    @test  unit(y[2]) == u"km/hr"
 
 end
 

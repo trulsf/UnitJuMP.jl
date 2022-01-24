@@ -6,5 +6,6 @@ using Reexport
 
 include("units.jl")
 include("mutable_arithmetics.jl")
+include("operators.jl")
 
 end
