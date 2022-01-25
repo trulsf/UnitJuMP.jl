@@ -15,13 +15,13 @@ argument
 
 ## Constraints
 
-Constraints are automatically created with units using the  ```@constraint``` macro if any of the involved parameters or variables have units. It is possible to specify the unit used for the constraint through the optional argument _unit_ (e.g. for consistent scaling)
+Constraints are automatically created with units using the  ```@constraint``` macro if any of the involved parameters or variables have units. It is possible to specify the unit used for the constraint by adding it is an extra argument (e.g. for consistent scaling)
 ```julia
     period = 1.4u"s"
     max_length = 1200u"ft"
-    @constraint(m, period * speed + length  <= max_length, unit=u"km")
+    @constraint(m, period * speed + length  <= max_length, u"km")
 ```
-If no unit is provided, the unit of the first term is used. Note that it is not possible to use 
+If no unit is provided, the unit of the first term is used. Note that it may cause problems if using  
 numerical parameters with units directly in the macro expression. Instead, create a separate parameter to hold the value
 
 
@@ -37,7 +37,7 @@ m = Model(GLPK.Optimizer)
 
 max_speed = 60u"km/hr"
 
-@constraint(m, x + y <= max_speed)
+@constraint(m, x + y <= max_speed, u"km/hr")
 @constraint(m, x <= 0.5y)
 obj = @objective(m, Max, x + y)
 

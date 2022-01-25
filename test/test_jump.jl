@@ -51,7 +51,7 @@ end
     @test typeof(c1) == UnitJuMP.UnitConstraintRef
     @test unit(c1) == u"km/hr"
 
-    @constraint(m, c2, 2v[1] + 4v[2] ≤ maxspeed, unit=u"m/s")
+    @constraint(m, c2, 2v[1] + 4v[2] ≤ maxspeed, u"m/s")
     @test unit(c2) == u"m/s"
     @test normalized_rhs(c2.cref) == convert(Float64, uconvert(u"m/s", maxspeed).val)
 
@@ -59,10 +59,10 @@ end
 
     maxlength = 1000u"yd"
     period = 1.5u"hr"
-    @constraint(m, c3, u[2] + period * v[2] ≤ maxlength * z, unit=u"cm")
+    @constraint(m, c3, u[2] + period * v[2] ≤ maxlength * z, u"cm")
     @test unit(c3) == u"cm"
 
-    @constraint(m, c3b, u[2] + 1.5u"hr" * v[2] ≤ 1000u"yd" * z, unit=u"cm")
+    @constraint(m, c3b, u[2] + 1.5u"hr" * v[2] ≤ 1000u"yd" * z, u"cm")
     @test unit(c3b) == u"cm"
 
 end

@@ -32,7 +32,7 @@ no_speed = 0.0u"m/s"
 
 @constraint(m, con7[i=1:4], v[i] <= max_speed)
 
-@constraint(m, con8, sum(v[i] for i=1:3) <= max_speed, unit=u"ft/s")
+@constraint(m, con8, sum(v[i] for i=1:3) <= max_speed, u"ft/s")
 
 
 @objective(m, Max, x + 0.2*z)

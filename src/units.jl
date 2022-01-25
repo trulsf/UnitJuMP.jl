@@ -80,13 +80,15 @@ function Unitful.convert(unit::Unitful.Units, uexpr::UnitAffExpr)
     return UnitAffExpr(uexpr.expr, unit)
 end
 
-function JuMP.build_constraint(_error::Function, uexpr::UnitAffExpr, set::MOI.AbstractScalarSet; kwargs...)
-    kwdict = Dict(kwargs)
-    if :unit in keys(kwdict)
-        uexpr = convert(kwdict[:unit], uexpr)
-    end
+function JuMP.build_constraint(_error::Function, uexpr::UnitAffExpr, set::MOI.AbstractScalarSet)
     return UnitConstraint(build_constraint(_error, uexpr.expr, set), uexpr.u)
 end
+
+function JuMP.build_constraint(_error::Function, uexpr::UnitAffExpr, set::MOI.AbstractScalarSet, u::Unitful.Units)
+    uexpr = convert(u, uexpr)
+    return UnitConstraint(build_constraint(_error, uexpr.expr, set), uexpr.u)
+end
+
 
 function JuMP.add_constraint(m::Model, uc::UnitConstraint, name::String)
     cref = JuMP.add_constraint(m, uc.con, name)
