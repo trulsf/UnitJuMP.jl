@@ -9,7 +9,7 @@ struct UnitVariableRef <: JuMP.AbstractVariableRef
     vref::JuMP.VariableRef
     u::Unitful.FreeUnits
 end
-model(uv::UnitVariableRef) = model(uv.vref)
+JuMP.owner_model(uv::UnitVariableRef) = owner_model(uv.vref)
 Unitful.unit(uv::UnitVariableRef) = uv.u
 
 function Base.show(io::IO, uv::UnitVariableRef)
@@ -31,7 +31,7 @@ struct UnitAffExpr <: JuMP.AbstractJuMPScalar
 end
 
 function Base.show(io::IO, ua::UnitAffExpr)
-    print(io, ua.expr, " ", ua.u)
+    print(io, "$(ua.expr) [$(ua.u)]")
 end
 
 Base.:(==)(ua::UnitAffExpr, other::UnitAffExpr) = ua.expr == other.expr && ua.u == other.u

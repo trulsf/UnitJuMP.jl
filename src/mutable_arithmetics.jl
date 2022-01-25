@@ -1,8 +1,4 @@
 
-import MutableArithmetics
-_MA = MutableArithmetics
-
-
 # Implemment the mutable arithmetics interface for UnitAffExpr
 
 _MA.mutability(::Type{UnitAffExpr}) = _MA.IsMutable()
@@ -57,24 +53,27 @@ function create_expression(t::AddSub, z::typeof(_MA.Zero()), a::Quantity)
 end
 
 # Two arguments
-_MA.operate!!(::typeof(_MA.add_mul), uav::UnitAffOrVar, x::UnitVariableRef) = update_expression!(Base.convert(UnitAffExpr, uav), 1, x)
-_MA.operate!!(::typeof(_MA.sub_mul), uav::UnitAffOrVar, x::UnitVariableRef) = update_expression!(Base.convert(UnitAffExpr, uav), -1, x)
+_MA.operate!!(::typeof(_MA.add_mul), uav::UnitAffOrVar, x::UnitVariableRef) = update_expression!(convert(UnitAffExpr, uav), 1, x)
+_MA.operate!!(::typeof(_MA.sub_mul), uav::UnitAffOrVar, x::UnitVariableRef) = update_expression!(convert(UnitAffExpr, uav), -1, x)
 
-_MA.operate!!(::typeof(_MA.add_mul), uav::UnitAffOrVar, x::UnitAffExpr) = update_expression!(Base.convert(UnitAffExpr, uav), x)
-_MA.operate!!(::typeof(_MA.sub_mul), uav::UnitAffOrVar, x::UnitAffExpr) = update_expression!(Base.convert(UnitAffExpr, uav), -1, x)
+_MA.operate!!(::typeof(_MA.add_mul), uav::UnitAffOrVar, x::UnitAffExpr) = update_expression!(convert(UnitAffExpr, uav), x)
+_MA.operate!!(::typeof(_MA.sub_mul), uav::UnitAffOrVar, x::UnitAffExpr) = update_expression!(convert(UnitAffExpr, uav), -1, x)
 
-_MA.operate!!(::typeof(_MA.add_mul), uav::UnitAffOrVar, a::Quantity) = update_expression!(Base.convert(UnitAffExpr, uav), a)
-_MA.operate!!(::typeof(_MA.sub_mul), uav::UnitAffOrVar, a::Quantity) = update_expression!(Base.convert(UnitAffExpr, uav), -a)
+_MA.operate!!(::typeof(_MA.add_mul), uav::UnitAffOrVar, a::Quantity) = update_expression!(convert(UnitAffExpr, uav), a)
+_MA.operate!!(::typeof(_MA.sub_mul), uav::UnitAffOrVar, a::Quantity) = update_expression!(convert(UnitAffExpr, uav), -a)
 
 # Three arguments
-_MA.operate!!(::typeof(_MA.add_mul), uav::UnitAffOrVar, a::NumQuant, x::UnitVariableRef) = update_expression!(Base.convert(UnitAffExpr, uav), a, x)
-_MA.operate!!(::typeof(_MA.sub_mul), uav::UnitAffOrVar, a::NumQuant, x::UnitVariableRef) = update_expression!(Base.convert(UnitAffExpr, uav), -a, x)
+_MA.operate!!(::typeof(_MA.add_mul), uav::UnitAffOrVar, a::NumQuant, x::UnitVariableRef) = update_expression!(convert(UnitAffExpr, uav), a, x)
+_MA.operate!!(::typeof(_MA.sub_mul), uav::UnitAffOrVar, a::NumQuant, x::UnitVariableRef) = update_expression!(convert(UnitAffExpr, uav), -a, x)
 
-_MA.operate!!(::typeof(_MA.add_mul), uav::UnitAffOrVar, a::Quantity, x::VariableRef) = update_expression!(Base.convert(UnitAffExpr, uav), a, x)
-_MA.operate!!(::typeof(_MA.sub_mul), uav::UnitAffOrVar, a::Quantity, x::VariableRef) = update_expression!(Base.convert(UnitAffExpr, uav), -a, x)
+_MA.operate!!(::typeof(_MA.add_mul), uav::UnitAffOrVar, a::Quantity, x::VariableRef) = update_expression!(convert(UnitAffExpr, uav), a, x)
+_MA.operate!!(::typeof(_MA.sub_mul), uav::UnitAffOrVar, a::Quantity, x::VariableRef) = update_expression!(convert(UnitAffExpr, uav), -a, x)
 
-_MA.operate!!(::typeof(_MA.add_mul), uav::UnitAffOrVar, a::NumQuant, b::NumQuant) = update_expression!(Base.convert(UnitAffExpr, uav), a, b)
-_MA.operate!!(::typeof(_MA.sub_mul), uav::UnitAffOrVar, a::NumQuant, b::NumQuant) = update_expression!(Base.convert(UnitAffExpr, uav), a, b)
+_MA.operate!!(::typeof(_MA.add_mul), uav::UnitAffOrVar, a::NumQuant, b::NumQuant) = update_expression!(convert(UnitAffExpr, uav), a, b)
+_MA.operate!!(::typeof(_MA.sub_mul), uav::UnitAffOrVar, a::NumQuant, b::NumQuant) = update_expression!(convert(UnitAffExpr, uav), -a, b)
+
+_MA.operate!!(::typeof(_MA.add_mul), uav::UnitAffOrVar, a::Number, b::Unitful.Units) = update_expression!(convert(UnitAffExpr, uav), a * Quantity(1.0, b))
+_MA.operate!!(::typeof(_MA.sub_mul), uav::UnitAffOrVar, a::Number, b::Unitful.Units) = update_expression!(convert(UnitAffExpr, uav), - a * Quantity(1.0, b))
 
 # Multiple arguments
 function _MA.operate!!(t::AddSub, uav::UnitAffOrVar, x, y, z, other_args...) 
