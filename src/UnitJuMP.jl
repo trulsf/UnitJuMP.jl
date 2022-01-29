@@ -11,4 +11,6 @@ include("units.jl")
 include("mutable_arithmetics.jl")
 include("operators.jl")
 
+export UnitAffExpr
+
 end

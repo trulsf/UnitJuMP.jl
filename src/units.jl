@@ -29,6 +29,7 @@ struct UnitAffExpr <: JuMP.AbstractJuMPScalar
     expr::AffExpr
     u::Unitful.FreeUnits
 end
+UnitAffExpr(u::Unitful.FreeUnits) = UnitAffExpr(AffExpr(), u)
 
 function Base.show(io::IO, ua::UnitAffExpr)
     print(io, "$(ua.expr) [$(ua.u)]")
@@ -65,19 +66,22 @@ function JuMP.check_belongs_to_model(ue::UnitAffExpr, model::AbstractModel)
     return JuMP.check_belongs_to_model(ue.expr, model)
 end
 
-function Unitful.convert(unit::Unitful.Units, uexpr::UnitAffExpr)
+function Unitful.uconvert(unit::Unitful.Units, uexpr::UnitAffExpr)
+
+    expr = copy(uexpr.expr)
+
     if unit == uexpr.u
-        return uexpr
+        return UnitAffExpr(expr, unit)
     end     
 
     factor = ustrip(uconvert(unit, Quantity(1, uexpr.u))) 
-    uexpr.expr.constant *= factor
+    expr.constant *= factor
 
     for k in keys(uexpr.expr.terms)
-        uexpr.expr.terms[k] *= factor
+        expr.terms[k] *= factor
     end
 
-    return UnitAffExpr(uexpr.expr, unit)
+    return UnitAffExpr(expr, unit)
 end
 
 function JuMP.build_constraint(_error::Function, uexpr::UnitAffExpr, set::MOI.AbstractScalarSet)
@@ -85,7 +89,7 @@ function JuMP.build_constraint(_error::Function, uexpr::UnitAffExpr, set::MOI.Ab
 end
 
 function JuMP.build_constraint(_error::Function, uexpr::UnitAffExpr, set::MOI.AbstractScalarSet, u::Unitful.Units)
-    uexpr = convert(u, uexpr)
+    uexpr = uconvert(u, uexpr)
     return UnitConstraint(build_constraint(_error, uexpr.expr, set), uexpr.u)
 end
 
@@ -100,4 +104,6 @@ function JuMP.value(uref::UnitVariableRef)
     return Quantity(JuMP.value(uref.vref), uref.u)
 end
 
-
+function JuMP.value(ua::UnitAffExpr)
+    return Quantity(JuMP.value(ua.expr), ua.u)
+end

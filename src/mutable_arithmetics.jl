@@ -88,6 +88,7 @@ end
 # Zero handling
 _MA.operate!!(t::AddSub, z::_MA.Zero, a::Quantity) = create_expression(t, z, a)
 _MA.operate!!(t::AddSub, z::_MA.Zero, x::UnitVariableRef) = create_expression(t, z, 1, x)
+_MA.operate!!(t::AddSub, z::_MA.Zero, ua::UnitAffExpr) = ua
 _MA.operate!!(t::AddSub, z::_MA.Zero, a::NumQuant, x::UnitVariableRef) = create_expression(t, z, a, x)
 _MA.operate!!(t::AddSub, z::_MA.Zero, x::UnitVariableRef, a::NumQuant) = create_expression(t, z, a, x)
 _MA.operate!!(t::AddSub, z::_MA.Zero, a::Quantity, x::VariableRef) = create_expression(t, z, a, x)

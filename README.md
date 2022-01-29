@@ -24,6 +24,25 @@ Constraints are automatically created with units using the  ```@constraint``` ma
 If no unit is provided, the unit of the first term is used. Note that it may cause problems if using  
 numerical parameters with units directly in the macro expression. Instead, create a separate parameter to hold the value
 
+## Expressions and objective
+
+Both the @expression and @objective macros will handle variables with units, but it is not possible to specify units as 
+part of the macro arguments. If one wants to use a different unit for the objective, the best approach
+is to create the objective as a separate expression and then convert it to the required unit before setting the objective:
+```julia
+obj = uconvert(u"km/hr", @expression(m, x + y))
+@objective(m, Max, obj)
+```
+
+As an alternative the objective can also be built incrementally as a `UnitAffExpr` of a given unit
+```julia
+obj = UnitAffExpr(u"km/hr")
+obj += x + y
+
+@objective(m, Max, obj)
+```
+
+
 
 ## Usage
 
@@ -44,6 +63,8 @@ obj = @objective(m, Max, x + y)
 optimize!(m)
 
 println("x = $(value(x))  y = $(value(y))")
+println("objective value = $(value(obj))")
 
 #output x = 5.555555555555556 m s^-1  y = 36.45377661125693 ft s^-1
+#       objective value = 16.666666666666668 m s^-1
 ```
