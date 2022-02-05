@@ -1,13 +1,13 @@
 
 
-struct UnitVariable <: JuMP.AbstractVariable
+struct UnitVariable{U <: Unitful.Units} <: JuMP.AbstractVariable
     v::JuMP.ScalarVariable
-    u::Unitful.FreeUnits
+    u::U
 end
 
-struct UnitVariableRef <: JuMP.AbstractVariableRef
+struct UnitVariableRef{U <: Unitful.Units} <: JuMP.AbstractVariableRef 
     vref::JuMP.VariableRef
-    u::Unitful.FreeUnits
+    u::U
 end
 JuMP.owner_model(uv::UnitVariableRef) = owner_model(uv.vref)
 Unitful.unit(uv::UnitVariableRef) = uv.u
@@ -16,20 +16,21 @@ function Base.show(io::IO, uv::UnitVariableRef)
     print(io, uv.vref, " ", uv.u)
 end
 
-function JuMP.build_variable(_error::Function, info::JuMP.VariableInfo, u::Unitful.Units)
-    return UnitVariable(JuMP.ScalarVariable(info), u)
+function JuMP.build_variable(_error::Function, info::JuMP.VariableInfo, u::U) where {U <: Unitful.Units} 
+    return UnitVariable{U}(JuMP.ScalarVariable(info), u)
 end
 
-function JuMP.add_variable(m::Model, v::UnitVariable, name::String)
+function JuMP.add_variable(m::Model, v::UnitVariable{U}, name::String) where {U}
     vref = JuMP.add_variable(m, v.v, name)
-    return UnitVariableRef(vref, v.u)
+    return UnitVariableRef{U}(vref, v.u)
 end
 
-struct UnitAffExpr <: JuMP.AbstractJuMPScalar
+struct UnitAffExpr{U <: Unitful.Units} <: JuMP.AbstractJuMPScalar  
     expr::AffExpr
-    u::Unitful.FreeUnits
+    u::U
 end
-UnitAffExpr(u::Unitful.FreeUnits) = UnitAffExpr(AffExpr(), u)
+UnitAffExpr(u::Unitful.Units) = UnitAffExpr{U}(AffExpr(), u)
+
 
 function Base.show(io::IO, ua::UnitAffExpr)
     print(io, "$(ua.expr) [$(ua.u)]")
@@ -41,22 +42,20 @@ function JuMP.moi_function(ua::UnitAffExpr)
     return JuMP.moi_function(ua.expr)
 end
 
-struct UnitConstraint <: AbstractConstraint
+struct UnitConstraint{U <: Unitful.Units} <: AbstractConstraint
     con::ScalarConstraint
-    u::Unitful.FreeUnits
+    u::U
 end
 
-struct UnitConstraintRef
+struct UnitConstraintRef{U <: Unitful.Units}
     cref::ConstraintRef
-    u::Unitful.FreeUnits
+    u::U
 end
-
 Unitful.unit(uc::UnitConstraintRef) = uc.u
 
 function Base.show(io::IO, uc::UnitConstraintRef)
     print(io, "$(uc.cref) [$(uc.u)]")
 end
-
 
 function JuMP.check_belongs_to_model(uc::UnitConstraint, model::AbstractModel)
     return JuMP.check_belongs_to_model(uc.con, model)
@@ -84,19 +83,19 @@ function Unitful.uconvert(unit::Unitful.Units, uexpr::UnitAffExpr)
     return UnitAffExpr(expr, unit)
 end
 
-function JuMP.build_constraint(_error::Function, uexpr::UnitAffExpr, set::MOI.AbstractScalarSet)
-    return UnitConstraint(build_constraint(_error, uexpr.expr, set), uexpr.u)
+function JuMP.build_constraint(_error::Function, uexpr::UnitAffExpr{U}, set::MOI.AbstractScalarSet) where {U}
+    return UnitConstraint{U}(build_constraint(_error, uexpr.expr, set), uexpr.u)
 end
 
-function JuMP.build_constraint(_error::Function, uexpr::UnitAffExpr, set::MOI.AbstractScalarSet, u::Unitful.Units)
+function JuMP.build_constraint(_error::Function, uexpr::UnitAffExpr, set::MOI.AbstractScalarSet, u::U) where {U <: Unitful.Units}
     uexpr = uconvert(u, uexpr)
-    return UnitConstraint(build_constraint(_error, uexpr.expr, set), uexpr.u)
+    return UnitConstraint{U}(build_constraint(_error, uexpr.expr, set), uexpr.u)
 end
 
 
-function JuMP.add_constraint(m::Model, uc::UnitConstraint, name::String)
+function JuMP.add_constraint(m::Model, uc::UnitConstraint{U}, name::String) where {U}
     cref = JuMP.add_constraint(m, uc.con, name)
-    return UnitConstraintRef(cref, uc.u)
+    return UnitConstraintRef{U}(cref, uc.u)
 end
 
 

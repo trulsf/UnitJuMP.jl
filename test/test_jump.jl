@@ -48,7 +48,7 @@ end
     @test unit(c1d) == u"km/hr"
 
     @constraint(m, c1, 2v[1] + 4v[2] ≤ maxspeed) 
-    @test typeof(c1) == UnitJuMP.UnitConstraintRef
+    @test typeof(c1) <: UnitJuMP.UnitConstraintRef
     @test unit(c1) == u"km/hr"
 
     @constraint(m, c2, 2v[1] + 4v[2] ≤ maxspeed, u"m/s")

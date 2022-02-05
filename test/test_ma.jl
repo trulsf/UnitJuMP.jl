@@ -6,7 +6,7 @@ m = Model()
 xu = UnitJuMP.UnitVariableRef(x, u"m/s")
 yu = UnitJuMP.UnitVariableRef(y, u"km/hr")
 
-@test _MA.@rewrite(xu) == UnitJuMP.UnitAffExpr(x, u"m/s")
+@test _MA.@rewrite(xu) == UnitJuMP.UnitAffExpr(1x, u"m/s")
 @test _MA.@rewrite(-xu) == UnitJuMP.UnitAffExpr(-x, u"m/s")
 @test _MA.@rewrite(5xu) == UnitJuMP.UnitAffExpr(5x, u"m/s")
 @test _MA.@rewrite(xu/5) == UnitJuMP.UnitAffExpr(0.2x, u"m/s")
