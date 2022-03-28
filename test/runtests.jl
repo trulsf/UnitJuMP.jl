@@ -15,6 +15,3 @@ end
 @testset "JuMP" begin
     include("test_jump.jl")
 end
-
-
-

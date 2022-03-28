@@ -1,67 +1,68 @@
 # UnitJuMP
 
-This is an experimental and proof-of-concept package that allows JuMP to be combined with units using Unitful.
+This is an experimental and proof-of-concept package that allows JuMP to be
+combined with units using Unitful.
 
-Currently, the package only supports a limited set of modelling with linear constraints using the ```@variable``` and ```@constraint``` macros.
+Currently, the package only supports a limited set of modelling with linear
+constraints using the `@variable` and `@constraint` macros.
 
 ## Variables
 
-Variables are defined with units using the ```@variable``` macro by adding the unit as a separate
-argument
+Variables are defined with units using the `@variable` macro by adding the unit
+as a separate argument:
 ```julia
-    @variable(m, speed, u"m/s")
-    @variable(m, length, u"cm")
+@variable(m, speed, u"m/s")
+@variable(m, length, u"cm")
 ```
 
 ## Constraints
 
-Constraints are automatically created with units using the  ```@constraint``` macro if any of the involved parameters or variables have units. It is possible to specify the unit used for the constraint by adding it is an extra argument (e.g. for consistent scaling)
+Constraints are automatically created with units using the  `@constraint` macro
+if any of the involved parameters or variables have units. It is possible to
+specify the unit used for the constraint by adding it is an extra argument
+(e.g., for consistent scaling):
 ```julia
-    period = 1.4u"s"
-    max_length = 1200u"ft"
-    @constraint(m, period * speed + length  <= max_length, u"km")
+period = 1.4u"s"
+max_length = 1200u"ft"
+@constraint(m, period * speed + length  <= max_length, u"km")
 ```
-If no unit is provided, the unit of the first term is used. Note that it may cause problems if using  
-numerical parameters with units directly in the macro expression. Instead, create a separate parameter to hold the value
+
+If no unit is provided, the unit of the first term is used. Note that it may
+cause problems if using numerical parameters with units directly in the macro
+expression. Instead, create a separate parameter to hold the value.
 
 ## Expressions and objective
 
-Both the @expression and @objective macros will handle variables with units, but it is not possible to specify units as 
-part of the macro arguments. If one wants to use a different unit for the objective, the best approach
-is to create the objective as a separate expression and then convert it to the required unit before setting the objective:
+Both the @expression and @objective macros will handle variables with units, but
+it is not possible to specify units as part of the macro arguments. If one wants
+to use a different unit for the objective, the best approach is to create the
+objective as a separate expression and then convert it to the required unit
+before setting the objective:
 ```julia
-obj = uconvert(u"km/hr", @expression(m, x + y))
+obj = Unitful.uconvert(u"km/hr", @expression(m, x + y))
 @objective(m, Max, obj)
 ```
 
-As an alternative the objective can also be built incrementally as a `UnitAffExpr` of a given unit
+As an alternative the objective can also be built incrementally as a
+`UnitAffExpr` of a given unit:
 ```julia
 obj = UnitAffExpr(u"km/hr")
 obj += x + y
-
 @objective(m, Max, obj)
 ```
-
-
 
 ## Usage
 
 ```julia
-using UnitJuMP, GLPK
-
-m = Model(GLPK.Optimizer)
-
+using UnitJuMP, HiGHS
+m = Model(HiGHS.Optimizer)
 @variable(m, x >= 0, u"m/s")
 @variable(m, y >= 0, u"ft/s")
-
 max_speed = 60u"km/hr"
-
 @constraint(m, x + y <= max_speed, u"km/hr")
 @constraint(m, x <= 0.5y)
 obj = @objective(m, Max, x + y)
-
 optimize!(m)
-
 println("x = $(value(x))  y = $(value(y))")
 println("objective value = $(value(obj))")
 
