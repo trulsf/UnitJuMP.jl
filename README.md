@@ -44,9 +44,9 @@ obj = Unitful.uconvert(u"km/hr", @expression(m, x + y))
 ```
 
 As an alternative the objective can also be built incrementally as a
-`UnitAffExpr` of a given unit:
+`UnitExpression` of a given unit:
 ```julia
-obj = UnitAffExpr(u"km/hr")
+obj = UnitExpression(AffExpr(), u"km/hr")
 obj += x + y
 @objective(m, Max, obj)
 ```
