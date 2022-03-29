@@ -1,5 +1,8 @@
 # UnitJuMP
 
+[![Build Status](https://github.com/trulsf/UnitJuMP.jl/workflows/CI/badge.svg?branch=main)](https://github.com/trulsf/UnitJuMP.jl/actions?query=workflow%3ACI)
+[![codecov](https://codecov.io/gh/trulsf/UnitJuMP.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/trulsf/UnitJuMP.jl)
+
 This is an experimental and proof-of-concept package that allows JuMP to be
 combined with units using Unitful.
 
