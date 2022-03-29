@@ -1,122 +1,145 @@
-struct UnitVariable{U<:Unitful.Units} <: JuMP.AbstractVariable
-    v::JuMP.ScalarVariable
-    u::U
+###
+### UnitVariableRef
+###
+
+struct _UnitVariable{U<:Unitful.Units} <: JuMP.AbstractVariable
+    variable::JuMP.ScalarVariable
+    unit::U
 end
 
+"""
+    UnitVariableRef(::JuMP.VariableRef, ::Unitful.Units)
+
+A type that wraps a `VariableRef` with a `Uniful.Units`.
+"""
 struct UnitVariableRef{U<:Unitful.Units} <: JuMP.AbstractVariableRef
-    vref::JuMP.VariableRef
-    u::U
+    variable::JuMP.VariableRef
+    unit::U
 end
 
-JuMP.owner_model(uv::UnitVariableRef) = owner_model(uv.vref)
+JuMP.owner_model(x::UnitVariableRef) = JuMP.owner_model(x.variable)
 
-Unitful.unit(uv::UnitVariableRef) = uv.u
+Unitful.unit(x::UnitVariableRef) = x.unit
 
-function Base.show(io::IO, uv::UnitVariableRef)
-    return print(io, uv.vref, " ", uv.u)
-end
+Base.show(io::IO, x::UnitVariableRef) = print(io, "$(x.variable) [$(x.unit)]")
 
 function JuMP.build_variable(
     ::Function,
     info::JuMP.VariableInfo,
-    u::U,
+    unit::U,
 ) where {U<:Unitful.Units}
-    return UnitVariable{U}(JuMP.ScalarVariable(info), u)
+    return _UnitVariable{U}(JuMP.ScalarVariable(info), unit)
 end
 
-function JuMP.add_variable(m::Model, v::UnitVariable{U}, name::String) where {U}
-    vref = JuMP.add_variable(m, v.v, name)
-    return UnitVariableRef{U}(vref, v.u)
+function JuMP.add_variable(
+    model::Model,
+    x::_UnitVariable{U},
+    name::String,
+) where {U}
+    variable = JuMP.add_variable(model, x.variable, name)
+    return UnitVariableRef{U}(variable, x.unit)
 end
 
+function JuMP.value(x::UnitVariableRef)
+    return Unitful.Quantity(JuMP.value(x.variable), x.unit)
+end
+
+###
+### UnitAffExpr
+###
+
+"""
+    UnitAffExpr(::JuMP.AffExpr, ::Unitful.Units)
+
+A type that wraps an `AffExpr` with a `Uniful.Units`.
+"""
 struct UnitAffExpr{U<:Unitful.Units} <: JuMP.AbstractJuMPScalar
     expr::AffExpr
-    u::U
+    unit::U
 end
 
-UnitAffExpr(u::Unitful.Units) = UnitAffExpr{U}(AffExpr(), u)
+UnitAffExpr(u::Unitful.Units) = UnitAffExpr{typeof(u)}(AffExpr(), u)
 
-function Base.show(io::IO, ua::UnitAffExpr)
-    return print(io, "$(ua.expr) [$(ua.u)]")
+Base.show(io::IO, x::UnitAffExpr) = print(io, "$(x.expr) [$(x.unit)]")
+
+function Base.:(==)(x::UnitAffExpr, y::UnitAffExpr)
+    return x.expr == y.expr && x.unit == y.unit
 end
 
-function Base.:(==)(ua::UnitAffExpr, other::UnitAffExpr)
-    return ua.expr == other.expr && ua.u == other.u
+JuMP.moi_function(x::UnitAffExpr) = JuMP.moi_function(x.expr)
+
+function JuMP.check_belongs_to_model(x::UnitAffExpr, model::AbstractModel)
+    return JuMP.check_belongs_to_model(x.expr, model)
 end
 
-function JuMP.moi_function(ua::UnitAffExpr)
-    return JuMP.moi_function(ua.expr)
-end
+Unitful.uconvert(::U, x::UnitAffExpr{U}) where {U} = x
 
-struct UnitConstraint{U<:Unitful.Units} <: AbstractConstraint
-    con::ScalarConstraint
-    u::U
-end
-
-struct UnitConstraintRef{U<:Unitful.Units}
-    cref::ConstraintRef
-    u::U
-end
-
-Unitful.Unitful.unit(uc::UnitConstraintRef) = uc.u
-
-function Base.show(io::IO, uc::UnitConstraintRef)
-    return print(io, "$(uc.cref) [$(uc.u)]")
-end
-
-function JuMP.check_belongs_to_model(uc::UnitConstraint, model::AbstractModel)
-    return JuMP.check_belongs_to_model(uc.con, model)
-end
-
-function JuMP.check_belongs_to_model(ue::UnitAffExpr, model::AbstractModel)
-    return JuMP.check_belongs_to_model(ue.expr, model)
-end
-
-function Unitful.Unitful.uconvert(unit::Unitful.Units, uexpr::UnitAffExpr)
-    expr = copy(uexpr.expr)
-    if unit == uexpr.u
-        return UnitAffExpr(expr, unit)
-    end
-    factor =
-        Unitful.ustrip(Unitful.uconvert(unit, Unitful.Quantity(1, uexpr.u)))
+function Unitful.uconvert(unit::Unitful.Units, x::UnitAffExpr)
+    expr = copy(x.expr)
+    factor = Unitful.ustrip(Unitful.uconvert(unit, Unitful.Quantity(1, x.unit)))
     expr.constant *= factor
-    for k in keys(uexpr.expr.terms)
-        expr.terms[k] *= factor
+    for (k, v) in x.expr.terms
+        expr.terms[k] = factor * v
     end
     return UnitAffExpr(expr, unit)
 end
 
+JuMP.value(x::UnitAffExpr) = Unitful.Quantity(JuMP.value(x.expr), x.unit)
+
+###
+### UnitConstraintRef
+###
+
+struct _UnitConstraint{U<:Unitful.Units} <: AbstractConstraint
+    constraint::ScalarConstraint
+    unit::U
+end
+
+"""
+    UnitConstraintRef(::JuMP.ConstraintRef, ::Unitful.Units)
+
+A type that wraps an `ConstraintRef` with a `Uniful.Units`.
+"""
+struct UnitConstraintRef{U<:Unitful.Units}
+    constraint::ConstraintRef
+    unit::U
+end
+
+Unitful.unit(c::UnitConstraintRef) = c.unit
+
+function Base.show(io::IO, c::UnitConstraintRef)
+    return print(io, "$(c.constraint) [$(c.unit)]")
+end
+
+function JuMP.check_belongs_to_model(c::_UnitConstraint, model::AbstractModel)
+    return JuMP.check_belongs_to_model(c.constraint, model)
+end
+
 function JuMP.build_constraint(
     _error::Function,
-    uexpr::UnitAffExpr{U},
+    expr::UnitAffExpr{U},
     set::MOI.AbstractScalarSet,
 ) where {U}
-    return UnitConstraint{U}(build_constraint(_error, uexpr.expr, set), uexpr.u)
+    return _UnitConstraint{U}(
+        JuMP.build_constraint(_error, expr.expr, set),
+        expr.unit,
+    )
 end
 
 function JuMP.build_constraint(
     _error::Function,
     uexpr::UnitAffExpr,
     set::MOI.AbstractScalarSet,
-    u::U,
+    unit::U,
 ) where {U<:Unitful.Units}
-    uexpr = Unitful.uconvert(u, uexpr)
-    return UnitConstraint{U}(build_constraint(_error, uexpr.expr, set), uexpr.u)
+    return JuMP.build_constraint(_error, Unitful.uconvert(unit, uexpr), set)
 end
 
 function JuMP.add_constraint(
-    m::Model,
-    uc::UnitConstraint{U},
+    model::Model,
+    c::_UnitConstraint{U},
     name::String,
 ) where {U}
-    cref = JuMP.add_constraint(m, uc.con, name)
-    return UnitConstraintRef{U}(cref, uc.u)
-end
-
-function JuMP.value(uref::UnitVariableRef)
-    return Unitful.Quantity(JuMP.value(uref.vref), uref.u)
-end
-
-function JuMP.value(ua::UnitAffExpr)
-    return Unitful.Quantity(JuMP.value(ua.expr), ua.u)
+    constraint = JuMP.add_constraint(model, c.constraint, name)
+    return UnitConstraintRef{U}(constraint, c.unit)
 end
