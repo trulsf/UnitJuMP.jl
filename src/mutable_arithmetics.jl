@@ -1,4 +1,8 @@
-# Implemment the mutable arithmetics interface for UnitAffExpr
+# Implement the MutableArithmetics API for UnitAffExpr
+
+const UnitAffExpr{U} = UnitExpression{AffExpr,U}
+
+UnitAffExpr(aff::AffExpr, unit::U) where {U} = UnitExpression(aff, unit)
 
 _MA.mutability(::Type{UnitAffExpr}) = _MA.IsMutable()
 

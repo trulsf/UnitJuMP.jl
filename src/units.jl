@@ -45,46 +45,40 @@ function JuMP.value(x::UnitVariableRef)
 end
 
 ###
-### UnitAffExpr
+### UnitExpression
 ###
 
 """
-    UnitAffExpr(::JuMP.AffExpr, ::Unitful.Units)
+    UnitExpression(::JuMP.AbstractJuMPScalar, ::Unitful.Units)
 
-A type that wraps an `AffExpr` with a `Uniful.Units`.
+A type that wraps an `AbstractJuMPScalar` with a `Uniful.Units`.
 """
-struct UnitAffExpr{U<:Unitful.Units} <: JuMP.AbstractJuMPScalar
-    expr::AffExpr
+struct UnitExpression{A<:JuMP.AbstractJuMPScalar,U<:Unitful.Units} <:
+       JuMP.AbstractJuMPScalar
+    expr::A
     unit::U
 end
 
-UnitAffExpr(u::Unitful.Units) = UnitAffExpr{typeof(u)}(AffExpr(), u)
+Base.show(io::IO, x::UnitExpression) = print(io, "$(x.expr) [$(x.unit)]")
 
-Base.show(io::IO, x::UnitAffExpr) = print(io, "$(x.expr) [$(x.unit)]")
-
-function Base.:(==)(x::UnitAffExpr, y::UnitAffExpr)
+function Base.:(==)(x::UnitExpression, y::UnitExpression)
     return x.expr == y.expr && x.unit == y.unit
 end
 
-JuMP.moi_function(x::UnitAffExpr) = JuMP.moi_function(x.expr)
+JuMP.moi_function(x::UnitExpression) = JuMP.moi_function(x.expr)
 
-function JuMP.check_belongs_to_model(x::UnitAffExpr, model::AbstractModel)
+function JuMP.check_belongs_to_model(x::UnitExpression, model::AbstractModel)
     return JuMP.check_belongs_to_model(x.expr, model)
 end
 
-Unitful.uconvert(::U, x::UnitAffExpr{U}) where {U} = x
+Unitful.uconvert(::U, x::UnitExpression{A,U}) where {A,U} = x
 
-function Unitful.uconvert(unit::Unitful.Units, x::UnitAffExpr)
-    expr = copy(x.expr)
+function Unitful.uconvert(unit::Unitful.Units, x::UnitExpression)
     factor = Unitful.ustrip(Unitful.uconvert(unit, Unitful.Quantity(1, x.unit)))
-    expr.constant *= factor
-    for (k, v) in x.expr.terms
-        expr.terms[k] = factor * v
-    end
-    return UnitAffExpr(expr, unit)
+    return UnitExpression(factor * x.expr, unit)
 end
 
-JuMP.value(x::UnitAffExpr) = Unitful.Quantity(JuMP.value(x.expr), x.unit)
+JuMP.value(x::UnitExpression) = Unitful.Quantity(JuMP.value(x.expr), x.unit)
 
 ###
 ### UnitConstraintRef
@@ -117,9 +111,9 @@ end
 
 function JuMP.build_constraint(
     _error::Function,
-    expr::UnitAffExpr{U},
+    expr::UnitExpression{A,U},
     set::MOI.AbstractScalarSet,
-) where {U}
+) where {A,U}
     return _UnitConstraint{U}(
         JuMP.build_constraint(_error, expr.expr, set),
         expr.unit,
@@ -128,10 +122,10 @@ end
 
 function JuMP.build_constraint(
     _error::Function,
-    uexpr::UnitAffExpr,
+    uexpr::UnitExpression,
     set::MOI.AbstractScalarSet,
-    unit::U,
-) where {U<:Unitful.Units}
+    unit::Unitful.Units,
+)
     return JuMP.build_constraint(_error, Unitful.uconvert(unit, uexpr), set)
 end
 
