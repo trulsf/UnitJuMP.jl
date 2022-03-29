@@ -17,6 +17,14 @@ function runtests()
     return
 end
 
+function test_examples()
+    examples = joinpath(@__DIR__, "..", "examples")
+    for filename in filter(f -> endswith(f, ".jl"), readdir(examples))
+        include(joinpath(examples, filename))
+    end
+    return
+end
+
 function test_jump_variables()
     m = Model()
 
@@ -167,6 +175,25 @@ function test_operators()
     @test expr + expr2 == UnitJuMP.UnitExpression(2y + 0.5z + 0.5w, u"hr")
     @test expr2 + expr == UnitJuMP.UnitExpression(120y + 30z + 30w, u"minute")
     @test 2 * expr - expr2 == UnitJuMP.UnitExpression(y + z - 0.5w, u"hr")
+    return
+end
+
+function test_number_times_quantity_times_variable()
+    a = 9.81u"m/s^2"
+    model = Model()
+    @variable(model, y, u"s")
+    expr = @expression(model, 0.5 * a * y)
+    @test Unitful.unit(expr) == u"m/s"
+    return
+end
+
+function test_number_times_quantity_times_variable_to_existing()
+    a = 9.81u"m/s^2"
+    model = Model()
+    @variable(model, x, u"m/s")
+    @variable(model, y, u"s")
+    expr = @expression(model, x + 0.5 * a * y)
+    @test Unitful.unit(expr) == u"m/s"
     return
 end
 

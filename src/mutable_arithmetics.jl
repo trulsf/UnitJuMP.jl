@@ -218,7 +218,7 @@ end
 
 # Multiple arguments
 function _MA.operate!!(t::_AddSub, uav::_UnitAffOrVar, x, y, z, other_args...)
-    args = [x, y, z, other_args...]
+    args = (x, y, z, other_args...)
     n = length(args)
     varidx = findall(
         t ->
@@ -280,7 +280,7 @@ function _MA.operate!!(
 end
 
 function _MA.operate!!(t::_AddSub, zero::_MA.Zero, x, y, z, other_args...)
-    args = [x, y, z, other_args...]
+    args = (x, y, z, other_args...)
     n = length(args)
     varidx = findall(
         t ->

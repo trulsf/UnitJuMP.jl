@@ -61,6 +61,8 @@ end
 
 Base.show(io::IO, x::UnitExpression) = print(io, "$(x.expr) [$(x.unit)]")
 
+Unitful.unit(x::UnitExpression) = x.unit
+
 function Base.:(==)(x::UnitExpression, y::UnitExpression)
     return x.expr == y.expr && x.unit == y.unit
 end
