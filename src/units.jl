@@ -10,7 +10,7 @@ end
 
 JuMP.owner_model(uv::UnitVariableRef) = owner_model(uv.vref)
 
-Unitful.Unitful.unit(uv::UnitVariableRef) = uv.u
+Unitful.unit(uv::UnitVariableRef) = uv.u
 
 function Base.show(io::IO, uv::UnitVariableRef)
     return print(io, uv.vref, " ", uv.u)
