@@ -21,12 +21,12 @@ function test_jump_variables()
     m = Model()
 
     @variable(m, x ≥ 0, u"m/s")
-    @test x == UnitJuMP.UnitVariableRef(x.vref, u"m/s")
+    @test x == UnitJuMP.UnitVariableRef(x.variable, u"m/s")
     @test unit(x) == u"m/s"
     @test owner_model(x) === m
 
     @variable(m, y[1:4], u"km/hr")
-    @test y[1] == UnitJuMP.UnitVariableRef(y[1].vref, u"km/hr")
+    @test y[1] == UnitJuMP.UnitVariableRef(y[1].variable, u"km/hr")
     return
 end
 
@@ -70,7 +70,7 @@ function test_jump_constraints()
 
     @constraint(m, c2, 2v[1] + 4v[2] ≤ maxspeed, u"m/s")
     @test unit(c2) == u"m/s"
-    @test normalized_rhs(c2.cref) ==
+    @test normalized_rhs(c2.constraint) ==
           convert(Float64, Unitful.uconvert(u"m/s", maxspeed).val)
 
     @variable(m, z, Bin)
