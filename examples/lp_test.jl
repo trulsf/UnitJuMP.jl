@@ -33,7 +33,7 @@ function test_simple_example()
     @test value(x) == 0.3u"m/s"
     @test value(y) == 0.0u"s"
     @test value(z) ≈ 0.00045u"km/s"
-    @test value(x + 0.2 * z) ≈ 0.39u"m/s" 
+    @test value(x + 0.2 * z) ≈ 0.39u"m/s"
     return
 end
 
