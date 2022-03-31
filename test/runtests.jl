@@ -140,7 +140,7 @@ function test_operators()
     @test 400u"m" - xu == UnitJuMP.UnitExpression(-1000x + 400, u"m")
 
     @test 200u"km" * x == UnitJuMP.UnitExpression(200 * x, u"km")
-    @test x * 200u"km"  == UnitJuMP.UnitExpression(200 * x, u"km")
+    @test x * 200u"km" == UnitJuMP.UnitExpression(200 * x, u"km")
     @test 200 * xu == UnitJuMP.UnitExpression(200 * x, u"km")
     @test xu * 200 == UnitJuMP.UnitExpression(200 * x, u"km")
     @test 1.5u"s" * xu == UnitJuMP.UnitExpression(1.5 * x, u"s*km")
