@@ -4,6 +4,7 @@ import HiGHS
 
 function test_simple_example()
     model = Model(HiGHS.Optimizer)
+    set_silent(model)
     max_speed = 2u"m/s"
     a = 9.8u"ft/s^2"
     M = 0.5u"m/s"
@@ -32,6 +33,7 @@ function test_simple_example()
     @test value(x) == 0.3u"m/s"
     @test value(y) == 0.0u"s"
     @test value(z) ≈ 0.00045u"km/s"
+    @test value(x + 0.2 * z) ≈ 0.39u"m/s" 
     return
 end
 

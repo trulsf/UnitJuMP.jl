@@ -104,6 +104,7 @@ function test_mutable_arithmetics()
     @test _MA.@rewrite(xu) == UnitJuMP.UnitExpression(1x, u"m/s")
     @test _MA.@rewrite(-xu) == UnitJuMP.UnitExpression(-x, u"m/s")
     @test _MA.@rewrite(5xu) == UnitJuMP.UnitExpression(5x, u"m/s")
+    @test _MA.@rewrite(xu * 5) == UnitJuMP.UnitExpression(5x, u"m/s")
     @test _MA.@rewrite(xu / 5) == UnitJuMP.UnitExpression(0.2x, u"m/s")
 
     @test _MA.@rewrite(xu + yu) == UnitJuMP.UnitExpression(x + y / 3.6, u"m/s")
@@ -114,9 +115,11 @@ function test_mutable_arithmetics()
     speed = 10u"m/s"
     @test _MA.@rewrite(speed * x) == UnitJuMP.UnitExpression(10x, u"m/s")
     @test _MA.@rewrite(x * speed) == UnitJuMP.UnitExpression(10x, u"m/s")
+    @test _MA.@rewrite(xu * 10) == UnitJuMP.UnitExpression(10x, u"m/s")
     @test _MA.@rewrite(speed * xu) == UnitJuMP.UnitExpression(10x, u"m^2/s^2")
     @test _MA.@rewrite(xu * speed) == UnitJuMP.UnitExpression(10x, u"m^2/s^2")
     @test _MA.@rewrite(x / speed) == UnitJuMP.UnitExpression(0.1x, u"s/m")
+
     return
 end
 
@@ -138,8 +141,11 @@ function test_operators()
     @test 400u"m" - xu == UnitJuMP.UnitExpression(-1000x + 400, u"m")
 
     @test 200u"km" * x == UnitJuMP.UnitExpression(200 * x, u"km")
+    @test x * 200u"km"  == UnitJuMP.UnitExpression(200 * x, u"km")
     @test 200 * xu == UnitJuMP.UnitExpression(200 * x, u"km")
+    @test xu * 200  == UnitJuMP.UnitExpression(200 * x, u"km")
     @test 1.5u"s" * xu == UnitJuMP.UnitExpression(1.5 * x, u"s*km")
+    @test xu * 1.5u"s" == UnitJuMP.UnitExpression(1.5 * x, u"s*km")
 
     @test xu / 0.5 == UnitJuMP.UnitExpression(2 * x, u"km")
     @test x / 0.5u"s" == UnitJuMP.UnitExpression(2 * x, u"s^-1")
@@ -157,8 +163,10 @@ function test_operators()
           UnitJuMP.UnitExpression(-3600y - 1800z + 3600, u"s")
 
     @test 2 * expr == UnitJuMP.UnitExpression(2y + z, u"hr")
+    @test expr * 2 == UnitJuMP.UnitExpression(2y + z, u"hr")
     @test expr / 0.5 == UnitJuMP.UnitExpression(2y + z, u"hr")
     @test 2u"kW" * expr == UnitJuMP.UnitExpression(2y + z, u"kW*hr")
+    @test expr * 2u"kW" == UnitJuMP.UnitExpression(2y + z, u"kW*hr")
     @test expr / 0.5u"km" == UnitJuMP.UnitExpression(2y + z, u"hr/km")
 
     @variable(m, w)
