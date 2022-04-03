@@ -10,6 +10,7 @@ _MA.mutability(::Type{UnitAffExpr}) = _MA.IsMutable()
 # constraints
 
 _UnitAffOrVar = Union{UnitVariableRef,UnitAffExpr}
+_AffOrVar = Union{AffExpr,VariableRef}
 _AddSub = Union{typeof(_MA.add_mul),typeof(_MA.sub_mul)}
 _NumQuant = Union{Number,Unitful.Quantity}
 
@@ -85,7 +86,10 @@ function _create_expression(
     z::typeof(_MA.Zero()),
     a::Unitful.Quantity,
 )
-    return UnitAffExpr(_MA.operate!!(t, z, Unitful.ustrip(a)), Unitful.unit(a))
+    return UnitAffExpr(
+        convert(AffExpr, _MA.operate!!(t, z, Unitful.ustrip(a))),
+        Unitful.unit(a),
+    )
 end
 
 # Two arguments
@@ -135,6 +139,26 @@ function _MA.operate!!(
     a::Unitful.Quantity,
 )
     return _update_expression(convert(UnitAffExpr, uav), -a)
+end
+
+function _MA.operate!!(::_AddSub, ::_UnitAffOrVar, ::_AffOrVar)
+    return error(
+        "Can not combine variables with and without units in the samme expression",
+    )
+end
+
+function _MA.operate!!(::_AddSub, ::_AffOrVar, ::_UnitAffOrVar)
+    return error(
+        "Can not combine variables with and without units in the samme expression",
+    )
+end
+
+function _MA.operate!!(::_AddSub, ::_UnitAffOrVar, ::Real)
+    return error("Can not combine unit expression with numbers without units")
+end
+
+function _MA.operate!!(::_AddSub, ::_AffOrVar, ::Unitful.Quantity)
+    return error("Can not combine unit parameters with variables without units")
 end
 
 # Three arguments
@@ -213,6 +237,29 @@ function _MA.operate!!(
     return _update_expression(
         convert(UnitAffExpr, uav),
         -a * Unitful.Quantity(1.0, b),
+    )
+end
+
+function _MA.operate!!(::_AddSub, ::_UnitAffOrVar, ::Real, ::VariableRef)
+    return error(
+        "Can not combine variables with and without units in the samme expression",
+    )
+end
+
+function _MA.operate!!(::_AddSub, ::_AffOrVar, ::_NumQuant, ::UnitVariableRef)
+    return error(
+        "Can not combine variables with and without units in the samme expression",
+    )
+end
+
+function _MA.operate!!(
+    ::_AddSub,
+    ::_AffOrVar,
+    ::Unitful.Quantity,
+    ::VariableRef,
+)
+    return error(
+        "Can not combine variables with and without units in the samme expression",
     )
 end
 

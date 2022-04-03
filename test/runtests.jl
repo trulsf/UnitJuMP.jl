@@ -120,6 +120,15 @@ function test_mutable_arithmetics()
     @test _MA.@rewrite(xu * speed) == UnitJuMP.UnitExpression(10x, u"m^2/s^2")
     @test _MA.@rewrite(x / speed) == UnitJuMP.UnitExpression(0.1x, u"s/m")
 
+    @test_throws ErrorException _MA.@rewrite(xu + y)
+    @test_throws ErrorException _MA.@rewrite(xu - y)
+    @test_throws ErrorException _MA.@rewrite(y + xu)
+    @test_throws ErrorException _MA.@rewrite(y - xu)
+    @test_throws ErrorException _MA.@rewrite(xu + 4)
+    @test_throws ErrorException _MA.@rewrite(xu - 4)
+    @test_throws ErrorException _MA.@rewrite(x + speed)
+    @test_throws ErrorException _MA.@rewrite(x - speed)
+
     return
 end
 
@@ -141,9 +150,9 @@ function test_operators()
     @test 400u"m" - xu == UnitJuMP.UnitExpression(-1000x + 400, u"m")
 
     @test 200u"km" * x == UnitJuMP.UnitExpression(200 * x, u"km")
-    @test x * 200u"km"  == UnitJuMP.UnitExpression(200 * x, u"km")
+    @test x * 200u"km" == UnitJuMP.UnitExpression(200 * x, u"km")
     @test 200 * xu == UnitJuMP.UnitExpression(200 * x, u"km")
-    @test xu * 200  == UnitJuMP.UnitExpression(200 * x, u"km")
+    @test xu * 200 == UnitJuMP.UnitExpression(200 * x, u"km")
     @test 1.5u"s" * xu == UnitJuMP.UnitExpression(1.5 * x, u"s*km")
     @test xu * 1.5u"s" == UnitJuMP.UnitExpression(1.5 * x, u"s*km")
 
