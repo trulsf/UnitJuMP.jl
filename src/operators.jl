@@ -129,3 +129,17 @@ function Base.:+(lhs::UnitExpression, rhs::UnitExpression)
 end
 
 Base.:-(lhs::UnitExpression, rhs::UnitExpression) = (+)(lhs, -rhs)
+
+# Do not allow combination of terms with or without units
+function Base.:+(lhs::_UnitAffOrVar, rhs::_AffOrVar)
+    return error("Can not combine variables with or without units")
+end
+function Base.:+(lhs::_UnitAffOrVar, rhs::Real)
+    return error("Can not combine unit expression with parameter without unit")
+end
+Base.:+(lhs::_AffOrVar, rhs::_UnitAffOrVar) = (+)(rhs, lhs)
+Base.:+(lhs::Real, rhs::_UnitAffOrVar) = (+)(rhs, lhs)
+Base.:-(lhs::_UnitAffOrVar, rhs::_AffOrVar) = (+)(lhs, -rhs)
+Base.:-(lhs::_AffOrVar, rhs::_UnitAffOrVar) = (+)(lhs, -rhs)
+Base.:-(lhs::_UnitAffOrVar, rhs::Real) = (+)(lhs, -rhs)
+Base.:-(lhs::Real, rhs::_UnitAffOrVar) = (+)(lhs, -rhs)

@@ -129,6 +129,9 @@ function test_mutable_arithmetics()
     @test_throws ErrorException _MA.@rewrite(x + speed)
     @test_throws ErrorException _MA.@rewrite(x - speed)
 
+    @test_throws ErrorException @constraint(m, x <= xu)
+    @test_throws ErrorException @constraint(m, xu <= y)
+    
     return
 end
 
@@ -192,6 +195,18 @@ function test_operators()
     @test expr + expr2 == UnitJuMP.UnitExpression(2y + 0.5z + 0.5w, u"hr")
     @test expr2 + expr == UnitJuMP.UnitExpression(120y + 30z + 30w, u"minute")
     @test 2 * expr - expr2 == UnitJuMP.UnitExpression(y + z - 0.5w, u"hr")
+
+    # Combination of unit expression with unitless variables/expressions
+    # should throw error
+    @test_throws ErrorException w + wu
+    @test_throws ErrorException w - wu
+    @test_throws ErrorException 4w - wu
+    @test_throws ErrorException wu - 4w
+    @test_throws ErrorException 4 - wu
+    @test_throws ErrorException wu + 4  
+    @test_throws ErrorException x + 2y - wu
+    @test_throws ErrorException xu + 2y - wu
+    
     return
 end
 
