@@ -131,7 +131,7 @@ function test_mutable_arithmetics()
 
     @test_throws ErrorException @constraint(m, x <= xu)
     @test_throws ErrorException @constraint(m, xu <= y)
-    
+
     return
 end
 
@@ -203,10 +203,10 @@ function test_operators()
     @test_throws ErrorException 4w - wu
     @test_throws ErrorException wu - 4w
     @test_throws ErrorException 4 - wu
-    @test_throws ErrorException wu + 4  
+    @test_throws ErrorException wu + 4
     @test_throws ErrorException x + 2y - wu
     @test_throws ErrorException xu + 2y - wu
-    
+
     return
 end
 
