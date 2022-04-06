@@ -119,17 +119,18 @@ function test_mutable_arithmetics()
     @test _MA.@rewrite(speed * xu) == UnitJuMP.UnitExpression(10x, u"m^2/s^2")
     @test _MA.@rewrite(xu * speed) == UnitJuMP.UnitExpression(10x, u"m^2/s^2")
     @test _MA.@rewrite(x / speed) == UnitJuMP.UnitExpression(0.1x, u"s/m")
-    @test _MA.@rewrite(4xu + 2yu - speed) == UnitJuMP.UnitExpression(4x + 2y / 3.6 - 10, u"m/s")
-    @test _MA.@rewrite(4xu - 2yu + speed) == UnitJuMP.UnitExpression(4x - 2y / 3.6 + 10, u"m/s")
-    
+    @test _MA.@rewrite(4xu + 2yu - speed) ==
+          UnitJuMP.UnitExpression(4x + 2y / 3.6 - 10, u"m/s")
+    @test _MA.@rewrite(4xu - 2yu + speed) ==
+          UnitJuMP.UnitExpression(4x - 2y / 3.6 + 10, u"m/s")
+
     ex = xu + yu
-    @test _MA.@rewrite(ex + yu + speed) == UnitJuMP.UnitExpression(x + 2y / 3.6 + 10, u"m/s")
+    @test _MA.@rewrite(ex + yu + speed) ==
+          UnitJuMP.UnitExpression(x + 2y / 3.6 + 10, u"m/s")
     ex = xu + yu
     @test _MA.@rewrite(yu + ex) == UnitJuMP.UnitExpression(3.6x + 2y, u"km/hr")
     ex = xu + yu
     @test _MA.@rewrite(yu - 2ex) == UnitJuMP.UnitExpression(-7.2x - y, u"km/hr")
-    
-    
 
     @test_throws ErrorException _MA.@rewrite(xu + y)
     @test_throws ErrorException _MA.@rewrite(xu - y)
