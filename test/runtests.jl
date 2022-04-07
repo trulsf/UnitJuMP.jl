@@ -134,13 +134,15 @@ function test_mutable_arithmetics()
 
     @test_throws ErrorException _MA.@rewrite(xu + y)
     @test_throws ErrorException _MA.@rewrite(xu - y)
+    @test_throws ErrorException _MA.@rewrite(xu + 5y)
+    @test_throws ErrorException _MA.@rewrite(xu - 3y)
     @test_throws ErrorException _MA.@rewrite(y + xu)
     @test_throws ErrorException _MA.@rewrite(y - xu)
+    @test_throws ErrorException _MA.@rewrite(y + 5xu)
+    @test_throws ErrorException _MA.@rewrite(y - 4xu)
     @test_throws ErrorException _MA.@rewrite(xu + 4)
     @test_throws ErrorException _MA.@rewrite(xu - 4)
-    @test_throws ErrorException _MA.@rewrite(x + speed)
-    @test_throws ErrorException _MA.@rewrite(x - speed)
-
+   
     @test_throws ErrorException @constraint(m, x <= xu)
     @test_throws ErrorException @constraint(m, xu <= y)
 
