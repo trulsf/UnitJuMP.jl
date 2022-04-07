@@ -119,6 +119,33 @@ function test_mutable_arithmetics()
     @test _MA.@rewrite(speed * xu) == UnitJuMP.UnitExpression(10x, u"m^2/s^2")
     @test _MA.@rewrite(xu * speed) == UnitJuMP.UnitExpression(10x, u"m^2/s^2")
     @test _MA.@rewrite(x / speed) == UnitJuMP.UnitExpression(0.1x, u"s/m")
+    @test _MA.@rewrite(4xu + 2yu - speed) ==
+          UnitJuMP.UnitExpression(4x + 2y / 3.6 - 10, u"m/s")
+    @test _MA.@rewrite(4xu - 2yu + speed) ==
+          UnitJuMP.UnitExpression(4x - 2y / 3.6 + 10, u"m/s")
+
+    ex = xu + yu
+    @test _MA.@rewrite(ex + yu + speed) ==
+          UnitJuMP.UnitExpression(x + 2y / 3.6 + 10, u"m/s")
+    ex = xu + yu
+    @test _MA.@rewrite(yu + ex) == UnitJuMP.UnitExpression(3.6x + 2y, u"km/hr")
+    ex = xu + yu
+    @test _MA.@rewrite(yu - 2ex) == UnitJuMP.UnitExpression(-7.2x - y, u"km/hr")
+
+    @test_throws ErrorException _MA.@rewrite(xu + y)
+    @test_throws ErrorException _MA.@rewrite(xu - y)
+    @test_throws ErrorException _MA.@rewrite(xu + 5y)
+    @test_throws ErrorException _MA.@rewrite(xu - 3y)
+    @test_throws ErrorException _MA.@rewrite(y + xu)
+    @test_throws ErrorException _MA.@rewrite(y - xu)
+    @test_throws ErrorException _MA.@rewrite(y + 5xu)
+    @test_throws ErrorException _MA.@rewrite(y - 4xu)
+    @test_throws ErrorException _MA.@rewrite(xu + 4)
+    @test_throws ErrorException _MA.@rewrite(xu - 4)
+
+    @test_throws ErrorException @constraint(m, x <= xu)
+    @test_throws ErrorException @constraint(m, xu <= y)
+
     return
 end
 
@@ -182,6 +209,19 @@ function test_operators()
     @test expr + expr2 == UnitJuMP.UnitExpression(2y + 0.5z + 0.5w, u"hr")
     @test expr2 + expr == UnitJuMP.UnitExpression(120y + 30z + 30w, u"minute")
     @test 2 * expr - expr2 == UnitJuMP.UnitExpression(y + z - 0.5w, u"hr")
+
+    # Combination of unit expression with unitless variables/expressions
+    # should throw error
+    @test_throws ErrorException w + wu
+    @test_throws ErrorException w - wu
+    @test_throws ErrorException 4w - wu
+    @test_throws ErrorException wu - 4w
+    @test_throws ErrorException 4 - wu
+    @test_throws ErrorException wu + 4
+    @test_throws ErrorException wu - 4
+    @test_throws ErrorException x + 2y - wu
+    @test_throws ErrorException xu + 2y - wu
+
     return
 end
 
