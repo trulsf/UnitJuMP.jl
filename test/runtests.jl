@@ -142,7 +142,7 @@ function test_mutable_arithmetics()
     @test_throws ErrorException _MA.@rewrite(y - 4xu)
     @test_throws ErrorException _MA.@rewrite(xu + 4)
     @test_throws ErrorException _MA.@rewrite(xu - 4)
-   
+
     @test_throws ErrorException @constraint(m, x <= xu)
     @test_throws ErrorException @constraint(m, xu <= y)
 
