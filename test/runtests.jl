@@ -244,6 +244,67 @@ function test_number_times_quantity_times_variable_to_existing()
     return
 end
 
+function test_unit_variable()
+    model = Model()
+    @variable(model, x, u"kW*hr")
+    @variable(model, y, u"s")
+
+    # Start values
+    set_start_value(x, 1u"MW*hr")
+    @test start_value(x) == 1000u"kW*hr"
+    @test_throws ErrorException set_start_value(x, 13.2)
+
+    # Lower bounds
+    set_lower_bound(x, 10u"MJ")
+    @test has_lower_bound(x)
+    @test lower_bound(x) == (10 / 3.6)u"kW*hr"
+    lref = LowerBoundRef(x)
+    @test typeof(lref) <: ConstraintRef
+    delete_lower_bound(x)
+    @test !has_lower_bound(x)
+    @test_throws ErrorException set_lower_bound(x, -4.0)
+
+    # Upper bounds
+    set_upper_bound(y, 10u"hr")
+    @test has_upper_bound(y)
+    @test upper_bound(y) == 36000u"s"
+    uref = UpperBoundRef(y)
+    @test typeof(uref) <: ConstraintRef
+    delete_upper_bound(y)
+    @test !has_lower_bound(y)
+    @test_throws ErrorException set_upper_bound(y, 42)
+
+    # Fix values
+    fix(y, 1u"hr")
+    @test is_fixed(y)
+    @test fix_value(y) == 3600u"s"
+    fref = FixRef(y)
+    @test typeof(fref) <: ConstraintRef
+    unfix(y)
+    @test !is_fixed(y)
+    @test_throws ErrorException fix(y, 10)
+
+    # Integer and binary
+    set_integer(x)
+    @test is_integer(x)
+    iref = IntegerRef(x)
+    @test typeof(iref) <: ConstraintRef
+    unset_integer(x)
+    @test !is_integer(x)
+    set_binary(y)
+    @test is_binary(y)
+    bref = BinaryRef(y)
+    @test typeof(bref) <: ConstraintRef
+    unset_binary(y)
+    @test !is_binary(y)
+
+    # Naming
+    set_name(x, "xvar")
+    @test name(x) == "xvar"
+
+    return
+end
+
 end
 
 RunTests.runtests()
