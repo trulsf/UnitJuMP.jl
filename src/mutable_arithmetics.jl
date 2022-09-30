@@ -6,18 +6,34 @@ UnitAffExpr(aff::AffExpr, unit::U) where {U} = UnitExpression(aff, unit)
 
 _MA.mutability(::Type{UnitAffExpr}) = _MA.IsMutable()
 
+function _MA.promote_operation(
+    ::Union{typeof(+),typeof(-)},
+    ::Type{V},
+    ::Type{V},
+) where {U,V<:UnitVariableRef{U}}
+    return UnitAffExpr{U}
+end
+
+function Base.zero(::Type{UnitAffExpr{U}}) where {U}
+    return UnitAffExpr(
+        zero(AffExpr),
+        U()
+    )
+end
+
 #  Minimal support of operate!! to allow @rewrite macro to work on linear
 # constraints
 
 _UnitAffOrVar = Union{UnitVariableRef,UnitAffExpr}
 _AffOrVar = Union{AffExpr,VariableRef}
 _AddSub = Union{typeof(_MA.add_mul),typeof(_MA.sub_mul)}
+_NumQuant = Union{Number,Unitful.Quantity}
 
 function Base.convert(::Type{UnitAffExpr}, uv::UnitVariableRef)
     return UnitAffExpr(convert(AffExpr, uv.variable), uv.unit)
 end
 
-function _update_expression(ua::UnitAffExpr, a::Number, x::UnitVariableRef)
+function _update_expression(ua::UnitAffExpr, a::_NumQuant, x::UnitVariableRef)
     aval = Unitful.ustrip(
         Unitful.uconvert(ua.unit, a * Unitful.Quantity(1, x.unit)),
     )
@@ -41,7 +57,7 @@ function _update_expression(ua::UnitAffExpr, a::Unitful.Quantity)
     return UnitAffExpr(JuMP.add_to_expression!(ua.expr, aval), ua.unit)
 end
 
-function _update_expression(ua::UnitAffExpr, a::Number, x::UnitAffExpr)
+function _update_expression(ua::UnitAffExpr, a::_NumQuant, x::UnitAffExpr)
     factor = Unitful.ustrip(
         Unitful.uconvert(ua.unit, a * Unitful.Quantity(1, x.unit)),
     )
@@ -51,21 +67,7 @@ function _update_expression(ua::UnitAffExpr, a::Number, x::UnitAffExpr)
     )
 end
 
-function _update_expression(ua::UnitAffExpr, a::Number, b::Unitful.Quantity)
-    aval = Unitful.ustrip(Unitful.uconvert(ua.unit, a * b))
-    return UnitAffExpr(JuMP.add_to_expression!(ua.expr, aval), ua.unit)
-end
-
-function _update_expression(ua::UnitAffExpr, a::Unitful.Quantity, b::Number)
-    aval = Unitful.ustrip(Unitful.uconvert(ua.unit, a * b))
-    return UnitAffExpr(JuMP.add_to_expression!(ua.expr, aval), ua.unit)
-end
-
-function _update_expression(
-    ua::UnitAffExpr,
-    a::Unitful.Quantity,
-    b::Unitful.Quantity,
-)
+function _update_expression(ua::UnitAffExpr, a::_NumQuant, b::_NumQuant)
     aval = Unitful.ustrip(Unitful.uconvert(ua.unit, a * b))
     return UnitAffExpr(JuMP.add_to_expression!(ua.expr, aval), ua.unit)
 end
@@ -73,7 +75,7 @@ end
 function _create_expression(
     t::_AddSub,
     z::typeof(_MA.Zero()),
-    a::Number,
+    a::_NumQuant,
     x::UnitVariableRef,
 )
     val = a * Unitful.Quantity(1, x.unit)
@@ -179,7 +181,7 @@ end
 function _MA.operate!!(
     ::typeof(_MA.add_mul),
     uav::_UnitAffOrVar,
-    a::Number,
+    a::_NumQuant,
     x::_UnitAffOrVar,
 )
     return _update_expression(
@@ -192,7 +194,7 @@ end
 function _MA.operate!!(
     ::typeof(_MA.sub_mul),
     uav::_UnitAffOrVar,
-    a::Number,
+    a::_NumQuant,
     x::_UnitAffOrVar,
 )
     return _update_expression(
@@ -223,8 +225,8 @@ end
 function _MA.operate!!(
     ::typeof(_MA.add_mul),
     uav::_UnitAffOrVar,
-    a::Number,
-    b::Number,
+    a::_NumQuant,
+    b::_NumQuant,
 )
     return _update_expression(convert(UnitAffExpr, uav), a, b)
 end
@@ -232,8 +234,8 @@ end
 function _MA.operate!!(
     ::typeof(_MA.sub_mul),
     uav::_UnitAffOrVar,
-    a::Number,
-    b::Number,
+    a::_NumQuant,
+    b::_NumQuant,
 )
     return _update_expression(convert(UnitAffExpr, uav), -a, b)
 end
@@ -268,7 +270,7 @@ function _MA.operate!!(::_AddSub, ::_UnitAffOrVar, ::Real, ::VariableRef)
     )
 end
 
-function _MA.operate!!(::_AddSub, ::_AffOrVar, ::Number, ::UnitVariableRef)
+function _MA.operate!!(::_AddSub, ::_AffOrVar, ::_NumQuant, ::UnitVariableRef)
     return error(
         "Can not combine variables with and without units in the samme expression",
     )
@@ -312,11 +314,21 @@ end
 
 _MA.operate!!(::_AddSub, ::_MA.Zero, ua::UnitAffExpr) = ua
 
-function _MA.operate!!(t::_AddSub, z::_MA.Zero, a::Number, x::UnitVariableRef)
+function _MA.operate!!(
+    t::_AddSub,
+    z::_MA.Zero,
+    a::_NumQuant,
+    x::UnitVariableRef,
+)
     return _create_expression(t, z, a, x)
 end
 
-function _MA.operate!!(t::_AddSub, z::_MA.Zero, x::UnitVariableRef, a::Number)
+function _MA.operate!!(
+    t::_AddSub,
+    z::_MA.Zero,
+    x::UnitVariableRef,
+    a::_NumQuant,
+)
     return _create_expression(t, z, a, x)
 end
 
