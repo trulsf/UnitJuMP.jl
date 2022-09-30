@@ -93,6 +93,41 @@ function test_jump_constraints()
     return
 end
 
+function test_sum()
+    m = Model()
+    @variable(m, x[1:10] ≥ 0, u"m/s")
+    
+    sx = sum(x)
+    sxx = sum(x[i] for i in 1:10)
+    @test sx == sxx
+
+    empty = sum(filter(el -> false, x))
+    @test typeof(empty) <: UnitJuMP.UnitAffExpr
+    period = 10u"s"
+    empty2 = sum(period .* filter(el -> false, x))
+    @test unit(empty2) == u"m"
+    @test typeof(empty2) <: UnitJuMP.UnitAffExpr
+
+    @variable(m, y[1:5] ≥ 0, u"m")
+    @constraint(m, sum(y) == sum(period * x[i] for i in 1:4))
+end
+
+function test_containers()
+
+    cars = ["A", "B", "C"]
+    years = collect(1980:2000)
+
+    m = Model()
+    @variable(m, x[cars=cars, years=years], u"km"; container=DenseAxisArray)
+    @test length(x) == 63
+    @test unit(first(x)) == u"km"
+
+    @variable(m, z[cars=cars, years=years], u"m/s"; container=SparseAxisArray)
+    @test length(z) == 63
+    @test unit(first(z)) == u"m/s"
+
+end
+
 function test_mutable_arithmetics()
     m = Model()
     @variable(m, x ≥ 0)
@@ -113,33 +148,12 @@ function test_mutable_arithmetics()
           UnitJuMP.UnitExpression(-x + y / 3.6, u"m/s")
 
     speed = 10u"m/s"
-    length = 10u"m"
-    freq = 1u"1/s"
     @test _MA.@rewrite(speed * x) == UnitJuMP.UnitExpression(10x, u"m/s")
     @test _MA.@rewrite(x * speed) == UnitJuMP.UnitExpression(10x, u"m/s")
     @test _MA.@rewrite(xu * 10) == UnitJuMP.UnitExpression(10x, u"m/s")
     @test _MA.@rewrite(speed * xu) == UnitJuMP.UnitExpression(10x, u"m^2/s^2")
     @test _MA.@rewrite(xu * speed) == UnitJuMP.UnitExpression(10x, u"m^2/s^2")
     @test _MA.@rewrite(x / speed) == UnitJuMP.UnitExpression(0.1x, u"s/m")
-    @test _MA.@rewrite(speed + 2xu) == UnitJuMP.UnitExpression(10 + 2x, u"m/s")
-    @test _MA.@rewrite(-speed + xu) == UnitJuMP.UnitExpression(-10 + x, u"m/s")
-    @test _MA.@rewrite(2xu - speed) == UnitJuMP.UnitExpression(2x - 10, u"m/s")
-
-    @test _MA.@rewrite(xu + 0.5 * speed) ==
-          UnitJuMP.UnitExpression(x + 5, u"m/s")
-    @test _MA.@rewrite(xu - 0.5 * speed) ==
-          UnitJuMP.UnitExpression(x - 5, u"m/s")
-    @test _MA.@rewrite(xu + speed * 0.5) ==
-          UnitJuMP.UnitExpression(x + 5, u"m/s")
-    @test _MA.@rewrite(xu - speed * 0.5) ==
-          UnitJuMP.UnitExpression(x - 5, u"m/s")
-    @test _MA.@rewrite(xu + length * freq) ==
-          UnitJuMP.UnitExpression(x + 10, u"m/s")
-    @test _MA.@rewrite(xu - length * freq) ==
-          UnitJuMP.UnitExpression(x - 10, u"m/s")
-    @test _MA.@rewrite(0.5 * speed + xu) ==
-          UnitJuMP.UnitExpression(x + 5, u"m/s")
-
     @test _MA.@rewrite(4xu + 2yu - speed) ==
           UnitJuMP.UnitExpression(4x + 2y / 3.6 - 10, u"m/s")
     @test _MA.@rewrite(4xu - 2yu + speed) ==
