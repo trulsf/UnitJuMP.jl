@@ -90,6 +90,9 @@ function test_jump_constraints()
 
     @constraint(m, c3b, u[2] + 1.5u"hr" * v[2] ≤ 1000u"yd" * z, u"cm")
     @test unit(c3b) == u"cm"
+
+    set_name(c3, "constraint")
+    @test name(c3) == "constraint"
     return
 end
 
@@ -110,6 +113,16 @@ function test_sum()
 
     @variable(m, y[1:5] ≥ 0, u"m")
     @constraint(m, sum(y) == sum(period * x[i] for i in 1:4))
+end
+
+function test_zero_one()
+    m = Model()
+    @variable(m, x ≥ 0, u"m/s")
+    z = zero(x)
+    @test unit(z) == unit(x)
+
+    o = one(x)
+    @test unit(o) == unit(x)
 end
 
 function test_containers()
