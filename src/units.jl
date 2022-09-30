@@ -210,6 +210,10 @@ function Base.show(io::IO, c::UnitConstraintRef)
     return print(io, "$(c.constraint) [$(c.unit)]")
 end
 
+function JuMP.name(c::UnitConstraintRef)
+    return JuMP.name(c.constraint)
+end
+
 function JuMP.set_name(c::UnitConstraintRef, name)
     return JuMP.set_name(c.constraint, name)
 end

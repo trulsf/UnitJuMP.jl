@@ -18,6 +18,10 @@ function Base.zero(::Type{UnitAffExpr{U}}) where {U}
     return UnitAffExpr(zero(AffExpr), U())
 end
 
+function Base.one(::Type{UnitAffExpr{U}}) where {U}
+    return UnitAffExpr(one(AffExpr), U())
+end
+
 #  Minimal support of operate!! to allow @rewrite macro to work on linear
 # constraints
 
