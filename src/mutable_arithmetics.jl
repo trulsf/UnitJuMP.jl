@@ -15,10 +15,7 @@ function _MA.promote_operation(
 end
 
 function Base.zero(::Type{UnitAffExpr{U}}) where {U}
-    return UnitAffExpr(
-        zero(AffExpr),
-        U()
-    )
+    return UnitAffExpr(zero(AffExpr), U())
 end
 
 #  Minimal support of operate!! to allow @rewrite macro to work on linear
