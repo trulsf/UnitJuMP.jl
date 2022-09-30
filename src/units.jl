@@ -211,7 +211,7 @@ function Base.show(io::IO, c::UnitConstraintRef)
 end
 
 function JuMP.set_name(c::UnitConstraintRef, name)
-    return JuMP.set_name(c.constraint, name) 
+    return JuMP.set_name(c.constraint, name)
 end
 
 function JuMP.check_belongs_to_model(c::_UnitConstraint, model::AbstractModel)
