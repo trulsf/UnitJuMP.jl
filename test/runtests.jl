@@ -96,7 +96,7 @@ end
 function test_sum()
     m = Model()
     @variable(m, x[1:10] ≥ 0, u"m/s")
-    
+
     sx = sum(x)
     sxx = sum(x[i] for i in 1:10)
     @test sx == sxx
@@ -113,19 +113,27 @@ function test_sum()
 end
 
 function test_containers()
-
     cars = ["A", "B", "C"]
     years = collect(1980:2000)
 
     m = Model()
-    @variable(m, x[cars=cars, years=years], u"km"; container=DenseAxisArray)
+    @variable(
+        m,
+        x[cars = cars, years = years],
+        u"km";
+        container = DenseAxisArray
+    )
     @test length(x) == 63
     @test unit(first(x)) == u"km"
 
-    @variable(m, z[cars=cars, years=years], u"m/s"; container=SparseAxisArray)
+    @variable(
+        m,
+        z[cars = cars, years = years],
+        u"m/s";
+        container = SparseAxisArray
+    )
     @test length(z) == 63
     @test unit(first(z)) == u"m/s"
-
 end
 
 function test_mutable_arithmetics()
