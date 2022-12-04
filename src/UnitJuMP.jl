@@ -10,6 +10,8 @@ _MA = MutableArithmetics
 include("units.jl")
 include("mutable_arithmetics.jl")
 include("operators.jl")
+include("ma_quad.jl")
+include("oper_quad.jl")
 
 export UnitVariableRef, UnitConstraintRef, UnitExpression
 
