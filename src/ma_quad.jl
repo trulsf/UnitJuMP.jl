@@ -4,12 +4,17 @@ const UnitQuadExpr{U} = UnitExpression{QuadExpr,U}
 
 UnitQuadExpr(quad::QuadExpr, unit::U) where {U} = UnitExpression(quad, unit)
 
-function _MA.operate!!(t::typeof(_MA.add_mul), z::_MA.Zero, x::UnitVariableRef, y::UnitVariableRef)
+function _MA.operate!!(
+    t::typeof(_MA.add_mul),
+    z::_MA.Zero,
+    x::UnitVariableRef,
+    y::UnitVariableRef,
+)
     xu = Unitful.Quantity(1, x.unit)
     yu = Unitful.Quantity(1, y.unit)
     return UnitQuadExpr(
         _MA.operate!!(t, z, x.variable, y.variable),
-        Unitful.unit(xu*yu),
+        Unitful.unit(xu * yu),
     )
 end
 

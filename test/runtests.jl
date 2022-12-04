@@ -157,10 +157,8 @@ function test_ma_quad()
     xu = UnitJuMP.UnitVariableRef(x, u"m")
     yu = UnitJuMP.UnitVariableRef(y, u"km")
 
-    @test _MA.@rewrite(xu * xu) == UnitJuMP.UnitQuadExpr(x*x, u"m^2")
-    @test _MA.@rewrite(xu * yu) == UnitJuMP.UnitQuadExpr(x*y, u"m*km")
-
-
+    @test _MA.@rewrite(xu * xu) == UnitJuMP.UnitExpression(x * x, u"m^2")
+    @test _MA.@rewrite(xu * yu) == UnitJuMP.UnitExpression(x * y, u"m*km")
 end
 
 function test_operators()
@@ -249,26 +247,26 @@ function test_operators_quad()
     xu = UnitJuMP.UnitVariableRef(x, u"km")
     zu = UnitJuMP.UnitVariableRef(z, u"s")
 
-    @test xu * xu == UnitJuMP.UnitExpression(x*x, u"km^2")
-    @test xu * zu == UnitJuMP.UnitExpression(x*z, u"km*s")
-    @test y * xu == UnitJuMP.UnitExpression(y*x, u"km")
-    @test xu * y == UnitJuMP.UnitExpression(y*x, u"km")
+    @test xu * xu == UnitJuMP.UnitExpression(x * x, u"km^2")
+    @test xu * zu == UnitJuMP.UnitExpression(x * z, u"km*s")
+    @test y * xu == UnitJuMP.UnitExpression(y * x, u"km")
+    @test xu * y == UnitJuMP.UnitExpression(y * x, u"km")
 
     a = 1000u"m"
     @test xu * (xu + a) == UnitJuMP.UnitExpression(x^2 + x, u"km^2")
-    @test (xu + a) * xu ==  UnitJuMP.UnitExpression(x^2 + x, u"km^2")
-    @test (xu + a) * (xu + a) ==  UnitJuMP.UnitExpression(x^2 + 2x + 1, u"km^2")
+    @test (xu + a) * xu == UnitJuMP.UnitExpression(x^2 + x, u"km^2")
+    @test (xu + a) * (xu + a) == UnitJuMP.UnitExpression(x^2 + 2x + 1, u"km^2")
 
-    @test (x + 1) * (xu + a) ==  UnitJuMP.UnitExpression(x^2 + 2x + 1, u"km")
-    @test (xu + a) * (x + 1) ==  UnitJuMP.UnitExpression(x^2 + 2x + 1, u"km")
+    @test (x + 1) * (xu + a) == UnitJuMP.UnitExpression(x^2 + 2x + 1, u"km")
+    @test (xu + a) * (x + 1) == UnitJuMP.UnitExpression(x^2 + 2x + 1, u"km")
 
-    @test (x + 1) * xu ==  UnitJuMP.UnitExpression(x^2 + x, u"km")
-    @test xu * (x + 1) ==  UnitJuMP.UnitExpression(x^2 + x, u"km")
+    @test (x + 1) * xu == UnitJuMP.UnitExpression(x^2 + x, u"km")
+    @test xu * (x + 1) == UnitJuMP.UnitExpression(x^2 + x, u"km")
 
     b = 1u"km^2"
     @test xu * xu + b == UnitJuMP.UnitExpression(x^2 + 1, u"km^2")
     @test b + xu * xu == UnitJuMP.UnitExpression(x^2 + 1, u"km^2")
-   
+
     @test xu^2 == UnitJuMP.UnitExpression(x^2, u"km^2")
     @test xu^1 == xu
     @test xu^0 == 1
