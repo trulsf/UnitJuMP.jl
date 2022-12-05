@@ -153,12 +153,119 @@ function test_ma_quad()
     m = Model()
     @variable(m, x ≥ 0)
     @variable(m, y)
+    @variable(m, z)
 
     xu = UnitJuMP.UnitVariableRef(x, u"m")
     yu = UnitJuMP.UnitVariableRef(y, u"km")
+    zu = UnitJuMP.UnitVariableRef(z, u"km^2")
 
     @test _MA.@rewrite(xu * xu) == UnitJuMP.UnitExpression(x * x, u"m^2")
     @test _MA.@rewrite(xu * yu) == UnitJuMP.UnitExpression(x * y, u"m*km")
+    @test _MA.@rewrite(-xu * xu) == UnitJuMP.UnitExpression(-x * x, u"m^2")
+
+    @test _MA.@rewrite(x * xu) == UnitJuMP.UnitExpression(x * x, u"m")
+    @test _MA.@rewrite(xu * x) == UnitJuMP.UnitExpression(x * x, u"m")
+
+    @test _MA.@rewrite(-x * xu) == UnitJuMP.UnitExpression(-x * x, u"m")
+
+    uexpr = xu + 10u"m"
+    @test _MA.@rewrite(xu * uexpr) ==
+          UnitJuMP.UnitExpression(x * x + 10x, u"m^2")
+    @test _MA.@rewrite(uexpr * xu) ==
+          UnitJuMP.UnitExpression(x * x + 10x, u"m^2")
+
+    expr = x + 1
+    @test _MA.@rewrite(xu * expr) == UnitJuMP.UnitExpression(x * x + x, u"m")
+    @test _MA.@rewrite(expr * xu) == UnitJuMP.UnitExpression(x * x + x, u"m")
+
+    @test _MA.@rewrite(uexpr * uexpr) ==
+          UnitJuMP.UnitExpression(x * x + 20x + 100, u"m^2")
+
+    @test _MA.@rewrite(uexpr * expr) ==
+          UnitJuMP.UnitExpression(x * x + 11x + 10, u"m")
+    @test _MA.@rewrite(expr * uexpr) ==
+          UnitJuMP.UnitExpression(x * x + 11x + 10, u"m")
+
+    @test _MA.@rewrite(uexpr * x) == UnitJuMP.UnitExpression(x * x + 10x, u"m")
+    @test _MA.@rewrite(x * uexpr) == UnitJuMP.UnitExpression(x * x + 10x, u"m")
+
+    @test _MA.@rewrite(uexpr^2) ==
+          UnitJuMP.UnitExpression(x * x + 20x + 100, u"m^2")
+
+    qexpr = (x + 1)^2
+    a = 10u"m"
+    @test _MA.@rewrite(a * qexpr) ==
+          UnitJuMP.UnitExpression(10x * x + 20x + 10, u"m")
+    @test _MA.@rewrite(qexpr * a) ==
+          UnitJuMP.UnitExpression(10x * x + 20x + 10, u"m")
+
+    quexpr = (xu + 1u"m")^2
+
+    b = 5
+    @test _MA.@rewrite(a * b * x^2) == UnitJuMP.UnitExpression(50x^2, u"m")
+    @test _MA.@rewrite(a * b * xu^2) == UnitJuMP.UnitExpression(50x^2, u"m^3")
+    @test _MA.@rewrite(a * b * qexpr) ==
+          UnitJuMP.UnitExpression(50x^2 + 100x + 50, u"m")
+    @test _MA.@rewrite(a * b * quexpr) ==
+          UnitJuMP.UnitExpression(50x^2 + 100x + 50, u"m^3")
+
+    @test _MA.@rewrite(xu^2 + zu) == UnitJuMP.UnitExpression(x^2 + 1e6z, u"m^2")
+    @test _MA.@rewrite(zu + xu^2) ==
+          UnitJuMP.UnitExpression(z + 1e-6x^2, u"km^2")
+    @test _MA.@rewrite(xu^2 - zu) == UnitJuMP.UnitExpression(x^2 - 1e6z, u"m^2")
+    @test _MA.@rewrite(zu - xu^2) ==
+          UnitJuMP.UnitExpression(z - 1e-6x^2, u"km^2")
+
+    qex = zu + 100u"m^2"
+    @test _MA.@rewrite(xu^2 + qex) ==
+          UnitJuMP.UnitExpression(x^2 + 1e6z + 100, u"m^2")
+    @test _MA.@rewrite(qex + xu^2) ==
+          UnitJuMP.UnitExpression(z + 1e-6x^2 + 1e-4, u"km^2")
+    @test _MA.@rewrite(xu^2 - qex) ==
+          UnitJuMP.UnitExpression(x^2 - 1e6z - 100, u"m^2")
+    @test _MA.@rewrite(qex - xu^2) ==
+          UnitJuMP.UnitExpression(z - 1e-6x^2 + 1e-4, u"km^2")
+
+    @test _MA.@rewrite(xu^2 + yu^2) ==
+          UnitJuMP.UnitExpression(x^2 + 1e6y^2, u"m^2")
+    @test _MA.@rewrite(xu^2 - yu^2) ==
+          UnitJuMP.UnitExpression(x^2 - 1e6y^2, u"m^2")
+
+    c = 0.01u"km^2"
+    @test _MA.@rewrite(xu^2 + c) == UnitJuMP.UnitExpression(x^2 + 1e4, u"m^2")
+    @test _MA.@rewrite(xu^2 - c) == UnitJuMP.UnitExpression(x^2 - 1e4, u"m^2")
+    @test _MA.@rewrite(c + xu^2) ==
+          UnitJuMP.UnitExpression(1e-6x^2 + 1e-2, u"km^2")
+    @test _MA.@rewrite(c - xu^2) ==
+          UnitJuMP.UnitExpression(-1e-6x^2 + 1e-2, u"km^2")
+
+    # Three arguments
+    @test _MA.@rewrite(xu^2 + c * z) ==
+          UnitJuMP.UnitExpression(x^2 + 1e4z, u"m^2")
+    @test _MA.@rewrite(xu^2 - c * z) ==
+          UnitJuMP.UnitExpression(x^2 - 1e4z, u"m^2")
+
+    @test _MA.@rewrite(xu^2 + b * zu) ==
+          UnitJuMP.UnitExpression(x^2 + 5e6z, u"m^2")
+    @test _MA.@rewrite(xu^2 - b * zu) ==
+          UnitJuMP.UnitExpression(x^2 - 5e6z, u"m^2")
+
+    @test _MA.@rewrite(xu^2 + a * yu) ==
+          UnitJuMP.UnitExpression(x^2 + 1e4y, u"m^2")
+    @test _MA.@rewrite(xu^2 - a * yu) ==
+          UnitJuMP.UnitExpression(x^2 - 1e4y, u"m^2")
+
+    @test _MA.@rewrite(yu^2 + c * qexpr) ==
+          UnitJuMP.UnitExpression(y^2 + 0.01x^2 + 0.02x + 0.01, u"km^2")
+    @test _MA.@rewrite(yu^2 - c * qexpr) ==
+          UnitJuMP.UnitExpression(y^2 - 0.01x^2 - 0.02x - 0.01, u"km^2")
+
+    @test _MA.@rewrite(xu^2 + b * quexpr) ==
+          UnitJuMP.UnitExpression(6x^2 + 10x + 5, u"m^2")
+    @test _MA.@rewrite(xu^2 - b * quexpr) ==
+          UnitJuMP.UnitExpression(-4x^2 - 10x - 5, u"m^2")
+
+    return
 end
 
 function test_operators()
@@ -263,6 +370,9 @@ function test_operators_quad()
     @test (x + 1) * xu == UnitJuMP.UnitExpression(x^2 + x, u"km")
     @test xu * (x + 1) == UnitJuMP.UnitExpression(x^2 + x, u"km")
 
+    @test x * (xu + a) == UnitJuMP.UnitExpression(x^2 + x, u"km")
+    @test (xu + a) * x == UnitJuMP.UnitExpression(x^2 + x, u"km")
+
     b = 1u"km^2"
     @test xu * xu + b == UnitJuMP.UnitExpression(x^2 + 1, u"km^2")
     @test b + xu * xu == UnitJuMP.UnitExpression(x^2 + 1, u"km^2")
@@ -276,6 +386,11 @@ function test_operators_quad()
     @test (xu + a)^1 == UnitJuMP.UnitExpression(x + 1, u"km")
     @test (xu + a)^0 == 1
     @test_throws ErrorException (xu + a)^4
+
+    @test b * x^2 == UnitJuMP.UnitExpression(x^2, u"km^2")
+    @test x^2 * b == UnitJuMP.UnitExpression(x^2, u"km^2")
+    @test b * (x + 1)^2 == UnitJuMP.UnitExpression(x^2 + 2x + 1, u"km^2")
+    @test (x + 1)^2 * b == UnitJuMP.UnitExpression(x^2 + 2x + 1, u"km^2")
 
     return
 end

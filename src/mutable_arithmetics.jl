@@ -297,7 +297,7 @@ function _MA.operate!!(t::_AddSub, z::_MA.Zero, x::UnitVariableRef)
     return _create_expression(t, z, 1, x)
 end
 
-_MA.operate!!(::_AddSub, ::_MA.Zero, ua::UnitAffExpr) = ua
+_MA.operate!!(::_AddSub, ::_MA.Zero, ua::UnitExpression) = ua
 
 function _MA.operate!!(
     t::_AddSub,
@@ -340,9 +340,10 @@ function _MA.operate!!(t::_AddSub, zero::_MA.Zero, x, y, z, other_args...)
     n = length(args)
     varidx = findall(
         t ->
-            (typeof(t) <: UnitAffExpr) ||
+            (typeof(t) <: UnitExpression) ||
                 (typeof(t) <: UnitVariableRef) ||
-                (typeof(t) <: VariableRef),
+                (typeof(t) <: VariableRef) ||
+                (typeof(t) <: QuadExpr),
         args,
     )
     var = args[varidx[1]]
