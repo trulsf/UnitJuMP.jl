@@ -307,6 +307,20 @@ function _update_expression(
     )
 end
 
+function _update_expression(
+    uexpr::UnitAffExpr,
+    a::_NumQuant,
+    uquad::UnitQuadExpr,
+)
+    aval = Unitful.ustrip(
+        Unitful.uconvert(uexpr.unit, a * Unitful.Quantity(1, uquad.unit))
+    )
+    return UnitQuadExpr(
+        JuMP.add_to_expression!(aval * uquad.expr, uexpr.expr),
+        uexpr.unit,
+    )
+end
+
 # UnitQuadExpr -- Quantity * VariableRef
 function _MA.operate!!(
     _::typeof(_MA.add_mul),
@@ -378,3 +392,60 @@ function _MA.operate!!(
 )
     return _update_expression(uquad, -a, x)
 end
+
+
+# UnitAffExpr -- Number/Quantity * UnitQuadExpr
+function _MA.operate!!(
+    _::typeof(_MA.add_mul),
+    uex::UnitAffExpr,
+    a::_NumQuant,
+    uquad::UnitQuadExpr,
+)
+    return _update_expression(uex, a, uquad)
+end
+function _MA.operate!!(
+    _::typeof(_MA.sub_mul),
+    uex::UnitAffExpr,
+    a::_NumQuant,
+    uquad::UnitQuadExpr,
+)
+    return _update_expression(uex, -a, uquad)
+end
+
+# UnitAffExpr -- UnitVariableRef * UnitVariableRef
+function _MA.operate!!(
+    _::typeof(_MA.add_mul),
+    uex::UnitAffExpr,
+    uvar1::UnitVariableRef,
+    uvar2::UnitVariableRef,
+)
+    return _update_expression(uex, 1, uvar1 * uvar2)
+end
+function _MA.operate!!(
+    _::typeof(_MA.sub_mul),
+    uex::UnitAffExpr,
+    uvar1::UnitVariableRef,
+    uvar2::UnitVariableRef,
+)
+    return _update_expression(uex, -1, uvar1 * uvar2)
+end
+
+# UnitAffExpr -- VariableRef * UnitVariableRef
+function _MA.operate!!(
+    _::typeof(_MA.add_mul),
+    uex::UnitAffExpr,
+    var::VariableRef,
+    uvar::UnitVariableRef,
+)
+    return _update_expression(uex, 1, var * uvar)
+end
+function _MA.operate!!(
+    _::typeof(_MA.sub_mul),
+    uex::UnitAffExpr,
+    var::VariableRef,
+    uvar::UnitVariableRef,
+)
+    return _update_expression(uex, -1, var * uvar)
+end
+
+# Multiple arguments
