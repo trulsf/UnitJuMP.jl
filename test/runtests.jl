@@ -2,6 +2,7 @@ module RunTests
 
 using UnitJuMP
 using Test
+using SparseVariables
 
 import MutableArithmetics
 const _MA = MutableArithmetics
@@ -93,6 +94,53 @@ function test_jump_constraints()
     return
 end
 
+function test_sparsevariables()
+    cars = ["A", "B", "C"]
+    years = collect(1980:2000)
+
+    m = Model()
+    @variable(
+        m,
+        x[cars = cars, years = years],
+        u"km";
+        container = IndexedVarArray
+    )
+    for i in 1980:1990
+        insertvar!(x, "A", i)
+        insertvar!(x, "B", i + 3)
+    end
+
+    @test unit(x["A", 1980]) == u"km"
+
+    @variable(m, z[cars = cars, years = years]; container = IndexedVarArray)
+    for i in 1980:1990
+        insertvar!(z, "A", i)
+        insertvar!(z, "B", i + 3)
+    end
+
+    @variable(m, y[cars = cars], u"m"; container = IndexedVarArray)
+    insertvar!(y, "A")
+    insertvar!(y, "C")
+
+    sy = sum(y)
+    syy = sum(y[:])
+    @test sy == syy
+
+    @constraint(m, con[c in cars], sum(x[c, :]) == y[c])
+    @test unit(con["A"]) == u"km"
+
+    emit = SparseArray(Dict(("A", 1980) => 10u"kg", ("A", 1982) => 20u"kg"))
+    obj = @objective(
+        m,
+        Min,
+        sum(emit[c, y] * z[c, y] for c in cars for y in years)
+    )
+
+    @test typeof(obj) <: UnitJuMP.UnitAffExpr
+    @test unit(obj) == u"kg"
+    @test obj.expr == 10z["A", 1980] + 20z["A", 1982]
+end
+
 function test_mutable_arithmetics()
     m = Model()
     @variable(m, x ≥ 0)
@@ -155,7 +203,7 @@ function test_ma_quad()
     @variable(m, y)
     @variable(m, z)
     @variable(m, w)
-    
+
     xu = UnitJuMP.UnitVariableRef(x, u"m")
     yu = UnitJuMP.UnitVariableRef(y, u"km")
     zu = UnitJuMP.UnitVariableRef(z, u"km^2")
@@ -181,7 +229,7 @@ function test_ma_quad()
     @test _MA.@rewrite(xu * x) == UnitJuMP.UnitExpression(x * x, u"m")
 
     @test _MA.@rewrite(-x * xu) == UnitJuMP.UnitExpression(-x * x, u"m")
-    
+
     @test _MA.@rewrite(xu * uexpr) ==
           UnitJuMP.UnitExpression(x * x + 10x, u"m^2")
     @test _MA.@rewrite(uexpr * xu) ==
@@ -275,9 +323,9 @@ function test_ma_quad()
     @test _MA.@rewrite(q - d * quadex) ==
           UnitJuMP.UnitExpression(-3w^2 - 24w - 38, u"m^2")
     @test _MA.@rewrite(q + xu * yu) ==
-          UnitJuMP.UnitExpression(10 + 1000x*y, u"m^2")
+          UnitJuMP.UnitExpression(10 + 1000x * y, u"m^2")
     @test _MA.@rewrite(q - xu * yu) ==
-          UnitJuMP.UnitExpression(10 - 1000x*y, u"m^2")
+          UnitJuMP.UnitExpression(10 - 1000x * y, u"m^2")
 
     return
 end

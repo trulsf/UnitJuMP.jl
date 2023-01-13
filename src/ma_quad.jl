@@ -313,7 +313,7 @@ function _update_expression(
     uquad::UnitQuadExpr,
 )
     aval = Unitful.ustrip(
-        Unitful.uconvert(uexpr.unit, a * Unitful.Quantity(1, uquad.unit))
+        Unitful.uconvert(uexpr.unit, a * Unitful.Quantity(1, uquad.unit)),
     )
     return UnitQuadExpr(
         JuMP.add_to_expression!(aval * uquad.expr, uexpr.expr),
@@ -392,7 +392,6 @@ function _MA.operate!!(
 )
     return _update_expression(uquad, -a, x)
 end
-
 
 # UnitAffExpr -- Number/Quantity * UnitQuadExpr
 function _MA.operate!!(

@@ -11,12 +11,12 @@ function test_quad_example()
 
     a = 0.5u"ft"
     b = 250u"cm"
-    v = 3u"m/s" 
+    v = 3u"m/s"
     d = 0.1u"hr"
 
-    @constraint(model, (x-a)^2 <= b^2)
-    @constraint(model, y - 1 / v * x  <= d)
-    obj =  x^2 / v^2 + y^2
+    @constraint(model, (x - a)^2 <= b^2)
+    @constraint(model, y - 1 / v * x <= d)
+    obj = x^2 / v^2 + y^2
     @objective(model, Max, obj)
     optimize!(model)
     @test value(x) ≈ 2.6524u"m"

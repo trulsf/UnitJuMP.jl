@@ -28,11 +28,7 @@ function _update_expression(ua::UnitAffExpr, a::_NumQuant, x::UnitVariableRef)
     )
 end
 
-function _update_expression(
-    ua::UnitAffExpr,
-    a::Unitful.Quantity,
-    x::VariableRef,
-)
+function _update_expression(ua::UnitAffExpr, a::Unitful.Quantity, x::_AffOrVar)
     aval = Unitful.ustrip(Unitful.uconvert(ua.unit, a))
     return UnitAffExpr(JuMP.add_to_expression!(ua.expr, aval, x), ua.unit)
 end
@@ -193,7 +189,7 @@ function _MA.operate!!(
     ::typeof(_MA.add_mul),
     uav::_UnitAffOrVar,
     a::Unitful.Quantity,
-    x::VariableRef,
+    x::_AffOrVar,
 )
     return _update_expression(convert(UnitAffExpr, uav), a, x)
 end
@@ -202,7 +198,7 @@ function _MA.operate!!(
     ::typeof(_MA.sub_mul),
     uav::_UnitAffOrVar,
     a::Unitful.Quantity,
-    x::VariableRef,
+    x::_AffOrVar,
 )
     return _update_expression(convert(UnitAffExpr, uav), -a, x)
 end

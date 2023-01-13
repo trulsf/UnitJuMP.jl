@@ -21,6 +21,12 @@ JuMP.owner_model(x::UnitVariableRef) = JuMP.owner_model(x.variable)
 
 Unitful.unit(x::UnitVariableRef) = x.unit
 
+function Base.zero(
+    _::Type{UnitVariableRef{U}},
+) where {N,D,A,U<:Unitful.Units{N,D,A}}
+    return Unitful.Quantity{Float64,D,U}(0.0)
+end
+
 Base.show(io::IO, x::UnitVariableRef) = print(io, "$(x.variable) [$(x.unit)]")
 
 function JuMP.build_variable(
