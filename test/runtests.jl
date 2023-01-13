@@ -91,7 +91,63 @@ function test_jump_constraints()
 
     @constraint(m, c3b, u[2] + 1.5u"hr" * v[2] ≤ 1000u"yd" * z, u"cm")
     @test unit(c3b) == u"cm"
+
+    set_name(c3, "constraint")
+    @test name(c3) == "constraint"
     return
+end
+
+function test_sum()
+    m = Model()
+    @variable(m, x[1:10] ≥ 0, u"m/s")
+
+    sx = sum(x)
+    sxx = sum(x[i] for i in 1:10)
+    @test sx == sxx
+
+    empty = sum(filter(el -> false, x))
+    @test typeof(empty) <: UnitJuMP.UnitAffExpr
+    period = 10u"s"
+    empty2 = sum(period .* filter(el -> false, x))
+    @test unit(empty2) == u"m"
+    @test typeof(empty2) <: UnitJuMP.UnitAffExpr
+
+    @variable(m, y[1:5] ≥ 0, u"m")
+    @constraint(m, sum(y) == sum(period * x[i] for i in 1:4))
+end
+
+function test_zero_one()
+    m = Model()
+    @variable(m, x ≥ 0, u"m/s")
+    z = zero(x)
+    @test unit(z) == unit(x)
+
+    o = one(x)
+    @test unit(o) == unit(x)
+end
+
+function test_containers()
+    cars = ["A", "B", "C"]
+    years = collect(1980:2000)
+
+    m = Model()
+    @variable(
+        m,
+        x[cars = cars, years = years],
+        u"km";
+        container = DenseAxisArray
+    )
+    @test length(x) == 63
+    @test unit(first(x)) == u"km"
+
+    @variable(
+        m,
+        z[cars = cars, years = years],
+        u"m/s";
+        container = SparseAxisArray
+    )
+    @test length(z) == 63
+    @test unit(first(z)) == u"m/s"
 end
 
 function test_sparsevariables()

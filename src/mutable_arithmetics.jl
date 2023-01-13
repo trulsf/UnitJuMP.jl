@@ -6,6 +6,22 @@ UnitAffExpr(aff::AffExpr, unit::U) where {U} = UnitExpression(aff, unit)
 
 _MA.mutability(::Type{UnitAffExpr}) = _MA.IsMutable()
 
+function _MA.promote_operation(
+    ::Union{typeof(+),typeof(-)},
+    ::Type{V},
+    ::Type{V},
+) where {U,V<:UnitVariableRef{U}}
+    return UnitAffExpr{U}
+end
+
+function Base.zero(::Type{UnitAffExpr{U}}) where {U}
+    return UnitAffExpr(zero(AffExpr), U())
+end
+
+function Base.one(::Type{UnitAffExpr{U}}) where {U}
+    return UnitAffExpr(one(AffExpr), U())
+end
+
 #  Minimal support of operate!! to allow @rewrite macro to work on linear
 # constraints
 

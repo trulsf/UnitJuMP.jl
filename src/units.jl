@@ -21,10 +21,11 @@ JuMP.owner_model(x::UnitVariableRef) = JuMP.owner_model(x.variable)
 
 Unitful.unit(x::UnitVariableRef) = x.unit
 
-function Base.zero(
-    _::Type{UnitVariableRef{U}},
-) where {N,D,A,U<:Unitful.Units{N,D,A}}
-    return Unitful.Quantity{Float64,D,U}(0.0)
+function Base.zero(::Type{UnitVariableRef{U}}) where {U}
+    return zero(UnitAffExpr{U})
+end
+function Base.one(::Type{UnitVariableRef{U}}) where {U}
+    return one(UnitAffExpr{U})
 end
 
 Base.show(io::IO, x::UnitVariableRef) = print(io, "$(x.variable) [$(x.unit)]")
@@ -207,6 +208,14 @@ Unitful.unit(c::UnitConstraintRef) = c.unit
 
 function Base.show(io::IO, c::UnitConstraintRef)
     return print(io, "$(c.constraint) [$(c.unit)]")
+end
+
+function JuMP.name(c::UnitConstraintRef)
+    return JuMP.name(c.constraint)
+end
+
+function JuMP.set_name(c::UnitConstraintRef, name)
+    return JuMP.set_name(c.constraint, name)
 end
 
 function JuMP.check_belongs_to_model(c::_UnitConstraint, model::AbstractModel)
