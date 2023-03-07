@@ -6,7 +6,7 @@
 This is an experimental and proof-of-concept package that allows JuMP to be
 combined with units using Unitful.
 
-Currently, the package only supports a limited set of modelling with linear
+Currently, the package only supports a limited set of modelling with linear and quadratic
 constraints using the `@variable` and `@constraint` macros.
 
 ## Variables
