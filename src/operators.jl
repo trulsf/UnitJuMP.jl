@@ -6,6 +6,7 @@
 # 3. UnitVariableRef
 # 4. VariableRef
 # 5. UnitExpression
+# 6. AffExpr
 
 # Unitful.Quantity/Number -- VariableRef/UnitVariableRef
 
@@ -49,6 +50,12 @@ Base.:*(lhs::UnitVariableRef, rhs::Unitful.Quantity) = (*)(rhs, lhs)
 Base.:/(lhs::UnitVariableRef, rhs::Number) = (*)(1.0 / rhs, lhs)
 Base.:/(lhs::VariableRef, rhs::Unitful.Quantity) = (*)(1.0 / rhs, lhs)
 Base.:/(lhs::UnitVariableRef, rhs::Unitful.Quantity) = (*)(1.0 / rhs, lhs)
+
+# Unitful.Quantity -- AffExpr
+function Base.:*(lhs::Unitful.Quantity, rhs::AffExpr)
+    return UnitExpression(Unitful.ustrip(lhs) * rhs, Unitful.unit(lhs))
+end
+Base.:*(lhs::AffExpr, rhs::Unitful.Quantity) = (*)(rhs, lhs)
 
 # UnitVariableRef -- UnitVariableRef
 # Use the Unitful.unit of the lhs term

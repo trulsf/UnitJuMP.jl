@@ -44,11 +44,7 @@ function _update_expression(ua::UnitAffExpr, a::_NumQuant, x::UnitVariableRef)
     )
 end
 
-function _update_expression(
-    ua::UnitAffExpr,
-    a::Unitful.Quantity,
-    x::VariableRef,
-)
+function _update_expression(ua::UnitAffExpr, a::Unitful.Quantity, x::_AffOrVar)
     aval = Unitful.ustrip(Unitful.uconvert(ua.unit, a))
     return UnitAffExpr(JuMP.add_to_expression!(ua.expr, aval, x), ua.unit)
 end
@@ -209,7 +205,7 @@ function _MA.operate!!(
     ::typeof(_MA.add_mul),
     uav::_UnitAffOrVar,
     a::Unitful.Quantity,
-    x::VariableRef,
+    x::_AffOrVar,
 )
     return _update_expression(convert(UnitAffExpr, uav), a, x)
 end
@@ -218,7 +214,7 @@ function _MA.operate!!(
     ::typeof(_MA.sub_mul),
     uav::_UnitAffOrVar,
     a::Unitful.Quantity,
-    x::VariableRef,
+    x::_AffOrVar,
 )
     return _update_expression(convert(UnitAffExpr, uav), -a, x)
 end
@@ -313,7 +309,7 @@ function _MA.operate!!(t::_AddSub, z::_MA.Zero, x::UnitVariableRef)
     return _create_expression(t, z, 1, x)
 end
 
-_MA.operate!!(::_AddSub, ::_MA.Zero, ua::UnitAffExpr) = ua
+_MA.operate!!(::_AddSub, ::_MA.Zero, ua::UnitExpression) = ua
 
 function _MA.operate!!(
     t::_AddSub,
@@ -356,9 +352,10 @@ function _MA.operate!!(t::_AddSub, zero::_MA.Zero, x, y, z, other_args...)
     n = length(args)
     varidx = findall(
         t ->
-            (typeof(t) <: UnitAffExpr) ||
+            (typeof(t) <: UnitExpression) ||
                 (typeof(t) <: UnitVariableRef) ||
-                (typeof(t) <: VariableRef),
+                (typeof(t) <: VariableRef) ||
+                (typeof(t) <: QuadExpr),
         args,
     )
     var = args[varidx[1]]
