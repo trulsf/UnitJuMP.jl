@@ -188,20 +188,6 @@ function _MA.operate!!(
 )
     return _update_expression(uqad, -convert(UnitAffExpr, x))
 end
-function _MA.operate!!(
-    _::typeof(_MA.add_mul),
-    x::UnitVariableRef,
-    uqad::UnitQuadExpr,
-)
-    return _update_expression(convert(UnitAffExpr, x), uquad)
-end
-function _MA.operate!!(
-    _::typeof(_MA.sub_mul),
-    x::UnitVariableRef,
-    uqad::UnitQuadExpr,
-)
-    return _update_expression(convert(UnitAffExpr, x), -uquad)
-end
 
 # UnitQuadExpr -- UnitQuadExpr
 function _MA.operate!!(
@@ -257,24 +243,6 @@ end
 function _MA.operate!!(::typeof(_MA.sub_mul), uqad::UnitQuadExpr, a::Quantity)
     aval = Unitful.ustrip(Unitful.uconvert(uqad.unit, a))
     return UnitQuadExpr(JuMP.add_to_expression!(uqad.expr, -aval), uqad.unit)
-end
-function _MA.operate!!(::typeof(_MA.add_mul), a::Quantity, uqad::UnitQuadExpr)
-    factor = Unitful.ustrip(
-        Unitful.uconvert(a.unit, Unitful.Quantity(1, uquad.unit)),
-    )
-    return UnitQuadExpr(
-        JuMP.add_to_expression!(factor * uquad.expr, Unitful.ustrip(a)),
-        a.unit,
-    )
-end
-function _MA.operate!!(::typeof(_MA.sub_mul), a::Quantity, uqad::UnitQuadExpr)
-    factor = Unitful.ustrip(
-        Unitful.uconvert(a.unit, Unitful.Quantity(1, uquad.unit)),
-    )
-    return UnitQuadExpr(
-        JuMP.add_to_expression!(factor * uquad.expr, -Unitful.ustrip(a)),
-        a.unit,
-    )
 end
 
 # Three arguments
