@@ -47,8 +47,8 @@ function JuMP.add_variable(
     return UnitVariableRef{U}(variable, x.unit)
 end
 
-function JuMP.value(x::UnitVariableRef)
-    return Unitful.Quantity(JuMP.value(x.variable), x.unit)
+function JuMP.value(x::UnitVariableRef; result::Int = 1)
+    return Unitful.Quantity(JuMP.value(x.variable; result), x.unit)
 end
 
 JuMP.name(x::UnitVariableRef) = JuMP.name(x.variable)
@@ -183,7 +183,7 @@ function Unitful.uconvert(unit::Unitful.Units, x::UnitExpression)
     return UnitExpression(factor * x.expr, unit)
 end
 
-JuMP.value(x::UnitExpression) = Unitful.Quantity(JuMP.value(x.expr), x.unit)
+JuMP.value(x::UnitExpression; result::Int = 1) = Unitful.Quantity(JuMP.value(x.expr; result = result), x.unit)
 
 ###
 ### UnitConstraintRef
