@@ -104,15 +104,14 @@ function test_objective()
 
     # Single objective
     obj = @objective(m, Min, x[1] + 2y[4])
-    @test typeof(obj) <: UnitExpression   
+    @test typeof(obj) <: UnitExpression
     @test unit(obj) == u"m/s"
 
     # Multi objective
     mobj = @objective(m, Min, [x[1] + 2y[4], 2y[2] - 4x[4]])
-    @test typeof(mobj) <: Vector{<:UnitExpression}   
+    @test typeof(mobj) <: Vector{<:UnitExpression}
     @test unit(mobj[1]) == u"m/s"
     @test unit(mobj[2]) == u"km/hr"
-
 end
 
 function test_sum()

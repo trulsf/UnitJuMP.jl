@@ -175,11 +175,10 @@ JuMP.moi_function(x::UnitExpression) = JuMP.moi_function(x.expr)
 expr(x) = x
 expr(x::UnitExpression) = x.expr
 
-function JuMP.moi_function(func::AbstractVector{<:AbstractJuMPScalar}) 
+function JuMP.moi_function(func::AbstractVector{<:AbstractJuMPScalar})
     func = [expr(f) for f in func]
     return JuMP.moi_function(func)
 end
-
 
 function JuMP.check_belongs_to_model(x::UnitExpression, model::AbstractModel)
     return JuMP.check_belongs_to_model(x.expr, model)
@@ -199,7 +198,6 @@ end
 function JuMP.value(xvec::AbstractVector{<:AbstractJuMPScalar}; result::Int = 1)
     return [JuMP.value(x; result = result) for x in xvec]
 end
-
 
 ###
 ### UnitConstraintRef
