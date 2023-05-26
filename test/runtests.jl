@@ -97,6 +97,24 @@ function test_jump_constraints()
     return
 end
 
+function test_objective()
+    m = Model()
+    @variable(m, x[1:4] ≥ 0, u"m/s")
+    @variable(m, y[1:4] ≥ 0, u"km/hr")
+
+    # Single objective
+    obj = @objective(m, Min, x[1] + 2y[4])
+    @test typeof(obj) <: UnitExpression   
+    @test unit(obj) == u"m/s"
+
+    # Multi objective
+    mobj = @objective(m, Min, [x[1] + 2y[4], 2y[2] - 4x[4]])
+    @test typeof(mobj) <: Vector{<:UnitExpression}   
+    @test unit(mobj[1]) == u"m/s"
+    @test unit(mobj[2]) == u"km/hr"
+
+end
+
 function test_sum()
     m = Model()
     @variable(m, x[1:10] ≥ 0, u"m/s")
