@@ -172,11 +172,8 @@ end
 
 JuMP.moi_function(x::UnitExpression) = JuMP.moi_function(x.expr)
 
-expr(x) = x
-expr(x::UnitExpression) = x.expr
-
 function JuMP.moi_function(func::AbstractVector{<:UnitExpression})
-    func = [expr(f) for f in func]
+    func = [f.expr for f in func]
     return JuMP.moi_function(func)
 end
 
