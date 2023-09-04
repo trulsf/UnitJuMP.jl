@@ -11,7 +11,7 @@ function test_multiobj_knapsack()
         [77, 94, 71, 63, 96, 82, 85, 75, 72, 91, 99, 63, 84, 87, 79, 94, 90] *
         u"NOK"
     desire =
-        [65, 90, 90, 77, 95, 84, 70, 94, 66, 92, 74, 97, 60, 60, 65, 97, 93]
+        [65, 90, 90, 77, 95, 84, 70, 94, 66, 92, 74, 97, 60, 60, 65, 97, 93] * u"NOK"
     weight =
         [80, 87, 68, 72, 66, 77, 99, 85, 70, 93, 98, 72, 100, 89, 67, 86, 91] *
         u"kg"
@@ -32,7 +32,7 @@ function test_multiobj_knapsack()
 
     res = value(obj; result = 5)
     @test res[1] ≈ 936.0u"NOK"
-    @test res[2] ≈ 942.0
+    @test res[2] ≈ 942.0u"NOK"
 end
 
 test_multiobj_knapsack()
