@@ -400,6 +400,11 @@ function test_ma_quad()
     @test _MA.@rewrite(q - xu * yu) ==
           UnitJuMP.UnitExpression(10 - 1000x * y, u"m^2")
 
+    @test _MA.@rewrite(q - 5 * xu * yu) ==
+          UnitJuMP.UnitExpression(10 - 5000x * y, u"m^2")
+    @test _MA.@rewrite(q - 5 * xu * 2 * yu) ==
+          UnitJuMP.UnitExpression(10 - 10000x * y, u"m^2")
+
     return
 end
 

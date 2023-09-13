@@ -295,9 +295,23 @@ function _MA.operate!!(t::_AddSub, uav::_UnitAffOrVar, x, y, z, other_args...)
                 (typeof(t) <: VariableRef),
         args,
     )
-    var = args[varidx[1]]
     val = prod(args[i] for i in setdiff(1:n, varidx))
-    return _MA.operate!!(t, uav, val, var)
+
+    nvars = length(varidx)
+    if nvars == 0
+        return _MA.operate!!(t, uav, val)
+    elseif nvars == 1
+        var = args[varidx[1]]
+        return _MA.operate!!(t, uav, val, var)
+    elseif nvars == 2
+        var1 = args[varidx[1]]
+        var2 = args[varidx[2]]
+        return _MA.operate!!(t, uav, val, var1 * var2)
+    else
+        return error(
+            "Can not have terms with more than quadratic contributions",
+        )
+    end
 end
 
 # Zero handling
