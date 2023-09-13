@@ -1,5 +1,5 @@
-# Support the use of qudratic expressions during rewrite  
-# with MutableArithmetics 
+# Support the use of qudratic expressions during rewrite
+# with MutableArithmetics
 
 const UnitQuadExpr{U} = UnitExpression{QuadExpr,U}
 
@@ -416,3 +416,11 @@ function _MA.operate!!(
 end
 
 # Multiple arguments
+
+function _MA.operate(
+    op::_AddSub,
+    z::UnitVariableRef,
+    args::Vararg{Any,N},
+) where {N}
+    return _MA.operate!!(op, z, args...)
+end
