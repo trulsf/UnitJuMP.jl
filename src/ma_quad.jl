@@ -1,4 +1,4 @@
-# Support the use of qudratic expressions during rewrite
+# Support the use of quadratic expressions during rewrite
 # with MutableArithmetics
 
 const UnitQuadExpr{U} = UnitExpression{QuadExpr,U}
