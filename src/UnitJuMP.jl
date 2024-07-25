@@ -6,6 +6,7 @@ using Reexport
 
 include("operators.jl")
 include("units.jl")
+include("bridge.jl")
 
 
 end # module UnitJuMP2
